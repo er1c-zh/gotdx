@@ -27,9 +27,11 @@ type GetSecurityListReply struct {
 type Security struct {
 	Code         string
 	VolUnit      uint16
+	Reserved1    uint32
 	DecimalPoint int8
 	Name         string
 	PreClose     float64
+	Reserved2    uint32
 }
 
 func NewGetSecurityList() *GetSecurityList {
@@ -75,28 +77,32 @@ func (obj *GetSecurityList) UnSerialize(header interface{}, data []byte) error {
 	pos += 2
 	for index := uint16(0); index < obj.reply.Count; index++ {
 		ele := Security{}
+
 		var code [6]byte
 		binary.Read(bytes.NewBuffer(data[pos:pos+6]), binary.LittleEndian, &code)
-		pos += 6
 		ele.Code = string(code[:])
+		pos += 6
 
 		binary.Read(bytes.NewBuffer(data[pos:pos+2]), binary.LittleEndian, &ele.VolUnit)
 		pos += 2
 
 		var name [8]byte
 		binary.Read(bytes.NewBuffer(data[pos:pos+8]), binary.LittleEndian, &name)
+		ele.Name = Utf8ToGbk(name[:])
 		pos += 8
 
-		ele.Name = Utf8ToGbk(name[:])
-
+		binary.Read(bytes.NewBuffer(data[pos:pos+4]), binary.LittleEndian, &ele.Reserved1)
 		pos += 4
+
 		binary.Read(bytes.NewBuffer(data[pos:pos+1]), binary.LittleEndian, &ele.DecimalPoint)
 		pos += 1
+
 		var precloseraw uint32
 		binary.Read(bytes.NewBuffer(data[pos:pos+4]), binary.LittleEndian, &precloseraw)
+		ele.PreClose = getvolume(int(precloseraw))
 		pos += 4
 
-		ele.PreClose = getvolume(int(precloseraw))
+		binary.Read(bytes.NewBuffer(data[pos:pos+4]), binary.LittleEndian, &ele.Reserved2)
 		pos += 4
 
 		obj.reply.List = append(obj.reply.List, ele)

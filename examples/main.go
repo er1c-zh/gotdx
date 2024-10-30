@@ -1,25 +1,48 @@
 package main
 
 import (
-	"github.com/er1c-zh/gotdx"
+	"fmt"
 	"log"
+	"os"
+
+	"gotdx/tdx"
 )
 
 func main() {
+	f, err := os.Create("output_sz.txt")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+
 	// ip地址如果失效，请自行替换
-	tdx := gotdx.New(gotdx.WithTCPAddress("124.71.187.122:7709"))
-	_, err := tdx.Connect()
+	cli := tdx.New(tdx.WithTCPAddress("124.71.187.122:7709"))
+	_, err = cli.Connect()
 	if err != nil {
 		log.Fatalln(err)
 	}
-	defer tdx.Disconnect()
+	defer cli.Disconnect()
 
-	reply, err := tdx.GetSecurityQuotes([]uint8{gotdx.MarketSh, gotdx.MarketSz}, []string{"000001", "600008"})
-	if err != nil {
-		log.Println(err)
+	cursor := uint16(0)
+	count := 0
+	for {
+		reply, err := cli.GetSecurityList(tdx.MarketSz, cursor)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		count += int(reply.Count)
+
+		for _, obj := range reply.List {
+			fmt.Fprintf(f, "%s %08X %08X %s\n", obj.Code, obj.Reserved1, obj.Reserved2, obj.Name)
+		}
+
+		if len(reply.List) < 1000 {
+			break
+		}
+		cursor += 1000
 	}
 
-	for _, obj := range reply.List {
-		log.Printf("%+v", obj)
-	}
+	log.Printf("%d / 1000\n", count)
 }

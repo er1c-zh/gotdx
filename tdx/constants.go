@@ -3,9 +3,17 @@ package tdx
 import "errors"
 
 const (
-	MarketSh = 0 // 上海
-	MarketSz = 1 // 深圳
+	MarketSz = 0 // 深圳
+	MarketSh = 1 // 上海
 	MarketBj = 2 // 北京
+)
+
+var (
+	MarketStrMap = map[uint8]string{
+		MarketSz: "SZ",
+		MarketSh: "SH",
+		MarketBj: "BJ",
+	}
 )
 
 const (

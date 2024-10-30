@@ -10,7 +10,7 @@ import (
 	"net"
 	"sync"
 
-	"github.com/er1c-zh/gotdx/proto"
+	"gotdx/proto"
 )
 
 func New(opts ...Option) *Client {
@@ -38,6 +38,12 @@ func (client *Client) connect() error {
 	}
 	client.conn = conn
 	return err
+}
+
+func (client *Client) IsConnected() bool {
+	client.mu.Lock()
+	defer client.mu.Unlock()
+	return client.conn != nil
 }
 
 func (client *Client) do(msg proto.Msg) error {
