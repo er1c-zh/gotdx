@@ -35,6 +35,7 @@ function App() {
   return (
     <div id="App">
       <div id="status-bar">
+        <h1 className="text-3xl font-bold underline">better tdx</h1>
         <button className="btn" onClick={connect}>
           Connect
         </button>
