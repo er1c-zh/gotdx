@@ -13,7 +13,7 @@ import (
 	"github.com/er1c-zh/gotdx/proto"
 )
 
-func New(opts ...proto.Option) *Client {
+func New(opts ...Option) *Client {
 	client := &Client{}
 
 	client.opt = applyOptions(opts...)

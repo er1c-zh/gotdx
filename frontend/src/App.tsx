@@ -1,28 +1,31 @@
-import {useState} from 'react';
-import logo from './assets/images/logo-universal.png';
-import './App.css';
-import {Greet} from "../wailsjs/go/main/App";
+import { useState } from "react";
+import logo from "./assets/images/logo-universal.png";
+import "./App.css";
+import { FetchStatus } from "../wailsjs/go/main/App";
+import { main } from "../wailsjs/go/models";
 
 function App() {
-    const [resultText, setResultText] = useState("Please enter your name below 👇");
-    const [name, setName] = useState('');
-    const updateName = (e: any) => setName(e.target.value);
-    const updateResultText = (result: string) => setResultText(result);
+  // connection status
+  const [connectionStatus, setConnectionStatus] = useState("Disconnected");
+  const updateConnectionStatus = (result: main.Status) => {
+    setConnectionStatus(result.Msg);
+  };
 
-    function greet() {
-        Greet(name).then(updateResultText);
-    }
+  function tryConnect() {
+    FetchStatus().then(updateConnectionStatus);
+    console.log("tryConnect");
+  }
 
-    return (
-        <div id="App">
-            <img src={logo} id="logo" alt="logo"/>
-            <div id="result" className="result">{resultText}</div>
-            <div id="input" className="input-box">
-                <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text"/>
-                <button className="btn" onClick={greet}>Greet</button>
-            </div>
-        </div>
-    )
+  return (
+    <div id="App">
+      <div id="status-bar">
+        <button className="btn" onClick={tryConnect}>
+          Connect
+        </button>
+        <p id="status-bar-connection">connection: {connectionStatus}</p>
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;
