@@ -1,54 +1,19 @@
-# gotdx
-通达信股票行情API golang版
+# README
 
+## About
 
-## API
-- Connect 连接券商行情服务器
-- Disconnect 断开服务器
-- GetSecurityCount 获取指定市场内的证券数目
-- GetSecurityQuotes 获取盘口五档报价
-- GetSecurityList 获取市场内指定范围内的所有证券代码
-- GetSecurityBars 获取股票K线
-- GetIndexBars 获取指数K线
-- GetMinuteTimeData 获取分时图数据
-- GetHistoryMinuteTimeData 获取历史分时图数据
-- GetTransactionData 获取分时成交
-- GetHistoryTransactionData 获取历史分时成交
+This is the official Wails React-TS template.
 
+You can configure the project by editing `wails.json`. More information about the project settings can be found
+here: https://wails.io/docs/reference/project-config
 
-## Example
-```go
-package main
+## Live Development
 
-import (
-	"github.com/bensema/gotdx"
-	"log"
-)
+To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
+server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
+and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
+to this in your browser, and you can call your Go code from devtools.
 
-func main() {
-	// ip地址如果失效，请自行替换
-	tdx := gotdx.New(gotdx.WithTCPAddress("124.71.187.122:7709"))
-	_, err := tdx.Connect()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer tdx.Disconnect()
+## Building
 
-	reply, err := tdx.GetSecurityQuotes([]uint8{gotdx.MarketSh, gotdx.MarketSz}, []string{"000001", "600008"})
-	if err != nil {
-		log.Println(err)
-	}
-
-	for _, obj := range reply.List {
-		log.Printf("%+v", obj)
-	}
-}
-
-
-```
-
-
-## Test
-```bash
- go test
-```
+To build a redistributable, production mode package, use `wails build`.
