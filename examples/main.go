@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	f, err := os.Create("output_sz.txt")
+	f, err := os.Create("output_sh.txt")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -27,7 +27,7 @@ func main() {
 	cursor := uint16(0)
 	count := 0
 	for {
-		reply, err := cli.GetSecurityList(tdx.MarketSz, cursor)
+		reply, err := cli.GetSecurityList(tdx.MarketSh, cursor)
 		if err != nil {
 			log.Println(err)
 			return
@@ -35,7 +35,7 @@ func main() {
 		count += int(reply.Count)
 
 		for _, obj := range reply.List {
-			fmt.Fprintf(f, "%s %08X %08X %s\n", obj.Code, obj.Reserved1, obj.Reserved2, obj.Name)
+			fmt.Fprintf(f, "%s %032b %032b %s\n", obj.Code, obj.Reserved1, obj.Reserved2, obj.Name)
 		}
 
 		if len(reply.List) < 1000 {
