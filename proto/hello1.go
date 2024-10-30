@@ -40,6 +40,9 @@ func NewHello1() *Hello1 {
 
 func (obj *Hello1) Serialize() ([]byte, error) {
 	b, err := hex.DecodeString(obj.contentHex)
+	if err != nil {
+		return nil, err
+	}
 
 	obj.reqHeader.PkgLen1 = 2 + uint16(len(b))
 	obj.reqHeader.PkgLen2 = 2 + uint16(len(b))

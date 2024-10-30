@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	f, err := os.Create("output_sh.txt")
+	f, err := os.Create("output_bj.txt")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -27,7 +27,8 @@ func main() {
 	cursor := uint16(0)
 	count := 0
 	for {
-		reply, err := cli.GetSecurityList(tdx.MarketSh, cursor)
+		log.Println("doing")
+		reply, err := cli.GetSecurityList(4, cursor)
 		if err != nil {
 			log.Println(err)
 			return

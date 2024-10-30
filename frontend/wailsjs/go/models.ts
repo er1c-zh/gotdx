@@ -1,9 +1,10 @@
-export namespace main {
+export namespace api {
 	
 	export class StockMeta {
 	    Market: number;
 	    Code: string;
 	    Desc: string;
+	    Meta: proto.Security;
 	
 	    static createFrom(source: any = {}) {
 	        return new StockMeta(source);
@@ -14,26 +15,7 @@ export namespace main {
 	        this.Market = source["Market"];
 	        this.Code = source["Code"];
 	        this.Desc = source["Desc"];
-	    }
-	}
-	export class StockMarketList {
-	    Market: number;
-	    MarketStr: string;
-	    Count: number;
-	    StockList: StockMeta[];
-	    StockMap: {[key: string]: StockMeta};
-	
-	    static createFrom(source: any = {}) {
-	        return new StockMarketList(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Market = source["Market"];
-	        this.MarketStr = source["MarketStr"];
-	        this.Count = source["Count"];
-	        this.StockList = this.convertValues(source["StockList"], StockMeta);
-	        this.StockMap = this.convertValues(source["StockMap"], StockMeta, true);
+	        this.Meta = this.convertValues(source["Meta"], proto.Security);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -58,7 +40,8 @@ export namespace main {
 	    IsConnected: boolean;
 	    Msg: string;
 	    StockCount: number;
-	    AllStock: StockMarketList[];
+	    StockList: StockMeta[];
+	    StockMap: {[key: string]: StockMeta};
 	
 	    static createFrom(source: any = {}) {
 	        return new IndexInfo(source);
@@ -69,7 +52,8 @@ export namespace main {
 	        this.IsConnected = source["IsConnected"];
 	        this.Msg = source["Msg"];
 	        this.StockCount = source["StockCount"];
-	        this.AllStock = this.convertValues(source["AllStock"], StockMarketList);
+	        this.StockList = this.convertValues(source["StockList"], StockMeta);
+	        this.StockMap = this.convertValues(source["StockMap"], StockMeta, true);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -90,7 +74,35 @@ export namespace main {
 		    return a;
 		}
 	}
+
+}
+
+export namespace proto {
 	
+	export class Security {
+	    Code: string;
+	    VolUnit: number;
+	    Reserved1: number;
+	    DecimalPoint: number;
+	    Name: string;
+	    PreClose: number;
+	    Reserved2: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new Security(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Code = source["Code"];
+	        this.VolUnit = source["VolUnit"];
+	        this.Reserved1 = source["Reserved1"];
+	        this.DecimalPoint = source["DecimalPoint"];
+	        this.Name = source["Name"];
+	        this.PreClose = source["PreClose"];
+	        this.Reserved2 = source["Reserved2"];
+	    }
+	}
 
 }
 
