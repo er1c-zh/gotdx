@@ -1,28 +1,46 @@
 import { useState } from "react";
 import logo from "./assets/images/logo-universal.png";
 import "./App.css";
-import { FetchStatus } from "../wailsjs/go/main/App";
+import { Connect, FetchStatus } from "../wailsjs/go/main/App";
 import { main } from "../wailsjs/go/models";
 
 function App() {
-  // connection status
-  const [connectionStatus, setConnectionStatus] = useState("Disconnected");
-  const updateConnectionStatus = (result: main.Status) => {
-    setConnectionStatus(result.Msg);
+  const [msg, setMsg] = useState("...");
+  const updateMsg = (msg: string) => {
+    setMsg(msg);
+  }
+  const [isConnected, setIsConnected] = useState(false);
+  const updateIsConnected = (IsConnected: boolean) => {
+    setIsConnected(IsConnected);
+  }
+  const [stockCount, setStockCount] = useState(-1);
+  const updateStockCount = (StockCount: number) => {
+    setStockCount(StockCount);
+  }
+
+  const updateIndexInfo = (result: main.IndexInfo) => {
+    setMsg(result.Msg);
+    setIsConnected(result.IsConnected);
+    setStockCount(result.StockCount);
   };
 
-  function tryConnect() {
-    FetchStatus().then(updateConnectionStatus);
-    console.log("tryConnect");
+  function connect() {
+    Connect("").then(updateMsg);
+  }
+
+  function fetchStatus() {
+    FetchStatus().then(updateIndexInfo);
   }
 
   return (
     <div id="App">
       <div id="status-bar">
-        <button className="btn" onClick={tryConnect}>
+        <button className="btn" onClick={connect}>
           Connect
         </button>
-        <p id="status-bar-connection">connection: {connectionStatus}</p>
+        <button className="btn" onClick={fetchStatus}>FetchStatus</button>
+        <p id="status-bar-connection">connection: {isConnected ? "connected" : "disconnected"}</p>
+        <p id="status-bar-stock-cnt">sh: {stockCount}</p>
       </div>
     </div>
   );
