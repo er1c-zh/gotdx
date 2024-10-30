@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/bensema/gotdx"
+	"github.com/er1c-zh/gotdx"
 	"log"
 )
 
