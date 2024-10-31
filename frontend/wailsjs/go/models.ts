@@ -1,5 +1,9 @@
 export namespace api {
 	
+	export enum MsgKey {
+	    processMsg = "processMsg",
+	    connectionStatus = "connectionStatus",
+	}
 	export class StockMeta {
 	    Market: number;
 	    Code: string;
@@ -73,6 +77,18 @@ export namespace api {
 		    }
 		    return a;
 		}
+	}
+	export class ProcessInfo {
+	    Msg: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ProcessInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Msg = source["Msg"];
+	    }
 	}
 
 }

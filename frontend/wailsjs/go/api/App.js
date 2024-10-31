@@ -6,6 +6,10 @@ export function Connect(arg1) {
   return window['go']['api']['App']['Connect'](arg1);
 }
 
+export function EmitProcessInfo(arg1) {
+  return window['go']['api']['App']['EmitProcessInfo'](arg1);
+}
+
 export function FetchStatus() {
   return window['go']['api']['App']['FetchStatus']();
 }

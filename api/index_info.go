@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"gotdx/proto"
 	"gotdx/tdx"
 
@@ -28,8 +29,10 @@ func (a *App) InitBasicInfo() {
 	a.once.Do(a.initBasicInfo)
 }
 func (a *App) initBasicInfo() {
+	a.EmitProcessInfo(ProcessInfo{Msg: "Start init basic info."})
 	runtime.LogInfof(a.ctx, "get basic info")
 	a.indexInfo.StockCount = 0
+	a.EmitProcessInfo(ProcessInfo{Msg: "Start fetch stock count."})
 	for _, market := range []uint8{tdx.MarketSh, tdx.MarketSz} {
 		runtime.LogInfof(a.ctx, "market: %d", market)
 		countResp, err := a.cli.GetSecurityCount(uint16(market))
@@ -42,6 +45,9 @@ func (a *App) initBasicInfo() {
 		}
 
 		runtime.LogInfof(a.ctx, "count: %d", countResp.Count)
+		a.EmitProcessInfo(ProcessInfo{
+			Msg: fmt.Sprintf("Get stock count: %s %d", tdx.MarketStrMap[market], countResp.Count),
+		})
 
 		a.indexInfo.StockCount += int(countResp.Count)
 	}
@@ -50,6 +56,7 @@ func (a *App) initBasicInfo() {
 	a.indexInfo.StockMap = make(map[string]StockMeta, a.indexInfo.StockCount)
 
 	runtime.LogInfof(a.ctx, "get stock list")
+	a.EmitProcessInfo(ProcessInfo{Msg: "Start fetch stock list."})
 
 	for _, market := range []uint8{tdx.MarketSh, tdx.MarketSz} {
 		cursor := 0
@@ -63,6 +70,11 @@ func (a *App) initBasicInfo() {
 			if listResp == nil {
 				break
 			}
+
+			a.EmitProcessInfo(ProcessInfo{
+				Msg: fmt.Sprintf("Get market info: %s %d", tdx.MarketStrMap[market], len(listResp.List)),
+			})
+
 			for _, meta := range listResp.List {
 				stockMeta := StockMeta{
 					Market: market,
@@ -73,6 +85,7 @@ func (a *App) initBasicInfo() {
 				a.indexInfo.StockList = append(a.indexInfo.StockList, stockMeta)
 				a.indexInfo.StockMap[meta.Code] = stockMeta
 			}
+
 			if len(listResp.List) < 1000 {
 				break
 			}
@@ -80,4 +93,5 @@ func (a *App) initBasicInfo() {
 		}
 	}
 	runtime.LogInfof(a.ctx, "stock count: %d", len(a.indexInfo.StockList))
+	a.EmitProcessInfo(ProcessInfo{Msg: fmt.Sprintf("Finish init basic info, stock count: %d.", len(a.indexInfo.StockList))})
 }

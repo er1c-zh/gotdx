@@ -2,9 +2,10 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"gotdx/tdx"
 	"sync"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -34,6 +35,14 @@ func (a *App) Shutdown(_ctx context.Context) {
 	}
 }
 
+type ProcessInfo struct {
+	Msg string
+}
+
+func (a *App) EmitProcessInfo(i ProcessInfo) {
+	runtime.EventsEmit(a.ctx, string(MsgKeyProcessMsg), i)
+}
+
 func (a *App) Connect(host string) string {
 	if host == "" {
 		host = "124.71.187.122:7709"
@@ -45,8 +54,9 @@ func (a *App) Connect(host string) string {
 	if err != nil {
 		return err.Error()
 	}
+	runtime.EventsEmit(a.ctx, string(MsgKeyConnectionStatus), 1)
 	go a.InitBasicInfo()
-	return fmt.Sprintf("server: %s", reply.Info)
+	return reply.Info
 }
 
 func (a *App) FetchStatus() IndexInfo {

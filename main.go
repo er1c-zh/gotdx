@@ -30,6 +30,9 @@ func main() {
 		Bind: []interface{}{
 			app,
 		},
+		EnumBind: []interface{}{
+			api.ExportMsg,
+		},
 	})
 
 	if err != nil {
