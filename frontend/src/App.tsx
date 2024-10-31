@@ -4,6 +4,7 @@ import { Connect, FetchStatus } from "../wailsjs/go/api/App";
 import { api } from "../wailsjs/go/models";
 import { EventsEmit, EventsOn } from "../wailsjs/runtime";
 import CommandPanel from "./components/CommandPanel";
+import RealtimeGraph from "./components/RealtimeGraph";
 
 function App() {
   const [msg, setMsg] = useState("better tdx");
@@ -43,9 +44,12 @@ function App() {
   const [cmdPanelShow, setCmdPanelShow] = useState(false);
 
   return (
-    <div id="App" className="container bg-gray-900 h-screen">
-      <div id="content" className={`${cmdPanelShow ? "blur-sm" : ""}`}>
-        <div id="status-bar" className="flex mb-2 bg-gray-700 space-x-2">
+    <div id="App" className="container bg-gray-900 h-dvh">
+      <div
+        id="content"
+        className={`h-full flex flex-col ${cmdPanelShow ? "blur-sm" : ""}`}
+      >
+        <div id="status-bar" className="flex bg-gray-700 space-x-2">
           <div
             className={`px-2 w-1/5 ${
               isConnected ? "bg-green-900" : "bg-red-900"
@@ -60,25 +64,35 @@ function App() {
             <span>{msg}</span>
           </div>
         </div>
-        <div>
-          <div className="space-x-4">
-            <button className="action-btn" onClick={connect}>
-              Connect
-            </button>
-            <button className="action-btn" onClick={fetchStatus}>
-              FetchStatus
-            </button>
-          </div>
+        <div className="flex items-start m-2 space-x-2">
+          <button className="action-btn" onClick={connect}>
+            Connect
+          </button>
+          <button className="action-btn" onClick={fetchStatus}>
+            FetchStatus
+          </button>
+        </div>
+        <div id="realtime-graph" className="flex-1 bg-cyan-300">
+          <RealtimeGraph
+            code={""}
+            data={[1, 2, 3, 4, 5, 6]}
+            width={120}
+            height={100}
+            marginTop={0}
+            marginRight={0}
+            marginBottom={0}
+            marginLeft={0}
+          />
         </div>
       </div>
-      <div
+      {/* <div
         id="command-panel"
         className={`${
           cmdPanelShow ? "" : "hidden"
         } w-screen fixed top-0 left-0`}
       >
         <CommandPanel setIsShow={setCmdPanelShow} />
-      </div>
+      </div> */}
     </div>
   );
 }
