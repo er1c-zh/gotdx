@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { Connect, FetchStatus } from "../wailsjs/go/api/App";
-import { api } from "../wailsjs/go/models";
+import { api, models } from "../wailsjs/go/models";
 import { EventsEmit, EventsOn } from "../wailsjs/runtime";
 import CommandPanel from "./components/CommandPanel";
 import RealtimeGraph from "./components/RealtimeGraph";
@@ -28,7 +28,7 @@ function App() {
   }
 
   useEffect(() => {
-    EventsOn(api.MsgKey.processMsg, (msg: api.ProcessInfo) => {
+    EventsOn(api.MsgKey.processMsg, (msg: models.ProcessInfo) => {
       updateMsg(msg.Msg);
     });
     EventsOn(api.MsgKey.connectionStatus, (connectionStatus: number) => {

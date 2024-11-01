@@ -51,6 +51,7 @@ func (obj *Hello1) Serialize() ([]byte, error) {
 	err = binary.Write(buf, binary.LittleEndian, obj.reqHeader)
 
 	buf.Write(b)
+
 	return buf.Bytes(), err
 }
 

@@ -11,8 +11,8 @@ func main() {
 	var err error
 
 	// ip地址如果失效，请自行替换
-	cli := tdx.New(tdx.WithTCPAddress("124.71.187.122:7709"))
-	// cli := tdx.New(tdx.WithTCPAddress("124.70.176.39:7615"))
+	// cli := tdx.New(tdx.WithTCPAddress("124.71.187.122:7709"))
+	cli := tdx.New(tdx.WithTCPAddress("110.41.147.114:7709"))
 	_, err = cli.Connect()
 	if err != nil {
 		log.Fatalln(err)

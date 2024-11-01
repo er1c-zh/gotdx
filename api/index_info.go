@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"gotdx/models"
 	"gotdx/proto"
 	"gotdx/tdx"
 
@@ -29,10 +30,10 @@ func (a *App) InitBasicInfo() {
 	a.once.Do(a.initBasicInfo)
 }
 func (a *App) initBasicInfo() {
-	a.EmitProcessInfo(ProcessInfo{Msg: "Start init basic info."})
+	a.EmitProcessInfo(models.ProcessInfo{Msg: "Start init basic info."})
 	runtime.LogInfof(a.ctx, "get basic info")
 	a.indexInfo.StockCount = 0
-	a.EmitProcessInfo(ProcessInfo{Msg: "Start fetch stock count."})
+	a.EmitProcessInfo(models.ProcessInfo{Msg: "Start fetch stock count."})
 	for _, market := range []uint8{tdx.MarketSh, tdx.MarketSz} {
 		runtime.LogInfof(a.ctx, "market: %d", market)
 		countResp, err := a.cli.GetSecurityCount(uint16(market))
@@ -45,7 +46,7 @@ func (a *App) initBasicInfo() {
 		}
 
 		runtime.LogInfof(a.ctx, "count: %d", countResp.Count)
-		a.EmitProcessInfo(ProcessInfo{
+		a.EmitProcessInfo(models.ProcessInfo{
 			Msg: fmt.Sprintf("Get stock count: %s %d", tdx.MarketStrMap[market], countResp.Count),
 		})
 
@@ -56,7 +57,7 @@ func (a *App) initBasicInfo() {
 	a.indexInfo.StockMap = make(map[string]StockMeta, a.indexInfo.StockCount)
 
 	runtime.LogInfof(a.ctx, "get stock list")
-	a.EmitProcessInfo(ProcessInfo{Msg: "Start fetch stock list."})
+	a.EmitProcessInfo(models.ProcessInfo{Msg: "Start fetch stock list."})
 
 	for _, market := range []uint8{tdx.MarketSh, tdx.MarketSz} {
 		cursor := 0
@@ -71,7 +72,7 @@ func (a *App) initBasicInfo() {
 				break
 			}
 
-			a.EmitProcessInfo(ProcessInfo{
+			a.EmitProcessInfo(models.ProcessInfo{
 				Msg: fmt.Sprintf("Get market info: %s %d", tdx.MarketStrMap[market], len(listResp.List)),
 			})
 
@@ -93,5 +94,5 @@ func (a *App) initBasicInfo() {
 		}
 	}
 	runtime.LogInfof(a.ctx, "stock count: %d", len(a.indexInfo.StockList))
-	a.EmitProcessInfo(ProcessInfo{Msg: fmt.Sprintf("Finish init basic info, stock count: %d.", len(a.indexInfo.StockList))})
+	a.EmitProcessInfo(models.ProcessInfo{Msg: fmt.Sprintf("Finish init basic info, stock count: %d.", len(a.indexInfo.StockList))})
 }

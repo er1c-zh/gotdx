@@ -5,11 +5,14 @@ import (
 	"compress/zlib"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net"
 	"sync"
+	"time"
 
+	"gotdx/models"
 	"gotdx/proto"
 )
 
@@ -19,6 +22,35 @@ func New(opts ...Option) *Client {
 	client.opt = applyOptions(opts...)
 	client.sending = make(chan bool, 1)
 	client.complete = make(chan bool, 1)
+	client.done = make(chan struct{})
+	client.heartbeatTicker = time.NewTicker(client.opt.HeartbeatInterval)
+	go func() {
+		// TODO recover panic
+		for {
+			select {
+			case <-client.heartbeatTicker.C:
+				if !client.connected {
+					continue
+				}
+				t0 := time.Now()
+				err := client.Heartbeat()
+				if err != nil {
+					client.mu.Lock()
+					client.connected = false
+					client.mu.Unlock()
+					client.opt.MsgCallback(models.ProcessInfo{
+						Msg: fmt.Sprintf("[%s] Detected connection broken, cost %d ms.", t0.Format("15:04:05"), time.Since(t0).Milliseconds()),
+					})
+				} else {
+					client.opt.MsgCallback(models.ProcessInfo{
+						Msg: fmt.Sprintf("[%s] 心跳成功, cost %d ms.", t0.Format("15:04:05"), time.Since(t0).Milliseconds()),
+					})
+				}
+			case <-client.done:
+				return
+			}
+		}
+	}()
 
 	return client
 }
@@ -29,6 +61,11 @@ type Client struct {
 	complete chan bool
 	sending  chan bool
 	mu       sync.Mutex
+
+	done chan struct{}
+
+	connected       bool
+	heartbeatTicker *time.Ticker
 }
 
 func (client *Client) connect() error {
@@ -43,7 +80,29 @@ func (client *Client) connect() error {
 func (client *Client) IsConnected() bool {
 	client.mu.Lock()
 	defer client.mu.Unlock()
-	return client.conn != nil
+	return client.connected
+}
+
+func ParseReqHeader(data []byte) (*proto.ReqHeader, error) {
+	var header proto.ReqHeader
+	if err := binary.Read(bytes.NewReader(data), binary.LittleEndian, &header); err != nil {
+		return nil, err
+	}
+
+	return &header, nil
+}
+
+func ParseRespHeader(data []byte) (*proto.RespHeader, error) {
+	var header proto.RespHeader
+	if err := binary.Read(bytes.NewReader(data), binary.LittleEndian, &header); err != nil {
+		return nil, err
+	}
+
+	if header.ZipSize > proto.MessageMaxBytes {
+		log.Printf("msgData has bytes(%d) beyond max %d\n", header.ZipSize, proto.MessageMaxBytes)
+		return nil, ErrBadData
+	}
+	return &header, nil
 }
 
 func (client *Client) do(msg proto.Msg) error {
@@ -77,15 +136,9 @@ func (client *Client) do(msg proto.Msg) error {
 		return err
 	}
 
-	headerBuf := bytes.NewReader(headerBytes)
-	var header proto.RespHeader
-	if err := binary.Read(headerBuf, binary.LittleEndian, &header); err != nil {
+	header, err := ParseRespHeader(headerBytes)
+	if err != nil {
 		return err
-	}
-
-	if header.ZipSize > proto.MessageMaxBytes {
-		log.Printf("msgData has bytes(%d) beyond max %d\n", header.ZipSize, proto.MessageMaxBytes)
-		return ErrBadData
 	}
 
 	msgData := make([]byte, header.ZipSize)
@@ -99,9 +152,9 @@ func (client *Client) do(msg proto.Msg) error {
 		b := bytes.NewReader(msgData)
 		r, _ := zlib.NewReader(b)
 		io.Copy(&out, r)
-		err = msg.UnSerialize(&header, out.Bytes())
+		err = msg.UnSerialize(header, out.Bytes())
 	} else {
-		err = msg.UnSerialize(&header, msgData)
+		err = msg.UnSerialize(header, msgData)
 	}
 
 	return err
@@ -115,6 +168,9 @@ func (client *Client) Connect() (*proto.Hello1Reply, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	client.connected = true
+
 	obj := proto.NewHello1()
 	err = client.do(obj)
 	if err != nil {
@@ -127,7 +183,15 @@ func (client *Client) Connect() (*proto.Hello1Reply, error) {
 func (client *Client) Disconnect() error {
 	client.mu.Lock()
 	defer client.mu.Unlock()
+	client.connected = false
 	return client.conn.Close()
+}
+
+func (client *Client) Heartbeat() error {
+	client.mu.Lock()
+	defer client.mu.Unlock()
+	obj := proto.NewHeartbeat()
+	return client.do(obj)
 }
 
 // GetSecurityCount 获取指定市场内的证券数目

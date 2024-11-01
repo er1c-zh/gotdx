@@ -1,7 +1,17 @@
 // 1 0 1 0 0 0 0 0 1 1 1 20 131 10 0 0 0 101 3 0 13 1 0 402
 LittleEndian();
-int16 count;
-byte r1[3];
-byte code[6];
-byte r2[2];
-byte open_price[2];
+struct req_header {
+	byte Zip;	int32 SeqID;	byte PacketType;	uint16 PkgLen1;	uint16 PkgLen2;	uint16 Method;
+};
+struct resp_header {
+    int32 r0;
+    byte r1;
+    uint32 seq_id;
+    byte r2;
+    uint16 method;
+    uint16 zip_size;
+    uint16 raw_size;
+};
+
+// req_header h;
+resp_header h;

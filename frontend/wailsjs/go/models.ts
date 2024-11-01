@@ -78,18 +78,6 @@ export namespace api {
 		    return a;
 		}
 	}
-	export class ProcessInfo {
-	    Msg: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new ProcessInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Msg = source["Msg"];
-	    }
-	}
 	export class RealtimeData {
 	    Data: proto.MinuteTimeData[];
 	    Meta: proto.Security;
@@ -121,6 +109,23 @@ export namespace api {
 		    }
 		    return a;
 		}
+	}
+
+}
+
+export namespace models {
+	
+	export class ProcessInfo {
+	    Msg: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ProcessInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Msg = source["Msg"];
+	    }
 	}
 
 }

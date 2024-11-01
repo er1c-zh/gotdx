@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"gotdx/models"
 	"gotdx/tdx"
 	"sync"
 
@@ -35,11 +36,7 @@ func (a *App) Shutdown(_ctx context.Context) {
 	}
 }
 
-type ProcessInfo struct {
-	Msg string
-}
-
-func (a *App) EmitProcessInfo(i ProcessInfo) {
+func (a *App) EmitProcessInfo(i models.ProcessInfo) {
 	runtime.EventsEmit(a.ctx, string(MsgKeyProcessMsg), i)
 }
 
@@ -48,7 +45,7 @@ func (a *App) Connect(host string) string {
 		host = "124.71.187.122:7709"
 	}
 	if a.cli == nil {
-		a.cli = tdx.New(tdx.WithTCPAddress(host))
+		a.cli = tdx.New(tdx.DefaultOption.WithTCPAddress(host).WithMsgCallback(a.EmitProcessInfo))
 	}
 	reply, err := a.cli.Connect()
 	if err != nil {
