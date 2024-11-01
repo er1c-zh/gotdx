@@ -90,11 +90,59 @@ export namespace api {
 	        this.Msg = source["Msg"];
 	    }
 	}
+	export class RealtimeData {
+	    Data: proto.MinuteTimeData[];
+	    Meta: proto.Security;
+	
+	    static createFrom(source: any = {}) {
+	        return new RealtimeData(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Data = this.convertValues(source["Data"], proto.MinuteTimeData);
+	        this.Meta = this.convertValues(source["Meta"], proto.Security);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 
 }
 
 export namespace proto {
 	
+	export class MinuteTimeData {
+	    Price: number;
+	    Volume: number;
+	    Reserved0: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new MinuteTimeData(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Price = source["Price"];
+	        this.Volume = source["Volume"];
+	        this.Reserved0 = source["Reserved0"];
+	    }
+	}
 	export class Security {
 	    Code: string;
 	    VolUnit: number;

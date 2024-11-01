@@ -6,6 +6,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
+	"fmt"
+	"slices"
 )
 
 type GetMinuteTimeData struct {
@@ -23,14 +25,32 @@ type GetMinuteTimeDataRequest struct {
 	Date   uint32
 }
 
+type BillboardRow struct {
+	DeltaFromCurrentPrice int
+	Volume                int
+}
 type GetMinuteTimeDataReply struct {
 	Count uint16
 	List  []MinuteTimeData
+
+	Reserved0 string
+	Reserved1 int
+	Reserved2 string
+
+	CurrentPrice  int
+	VolumeAfter   int
+	VolumeAll     int
+	VolumeCurrent int
+	TradeAmmount  float32
+	VolumeBuy     int
+	VolumeSell    int
+	Billboard     []BillboardRow
 }
 
 type MinuteTimeData struct {
-	Price float32
-	Vol   int
+	Price     int
+	Volume    int
+	Reserved0 int
 }
 
 func NewGetMinuteTimeData() *GetMinuteTimeData {
@@ -61,7 +81,13 @@ func (obj *GetMinuteTimeData) Serialize() ([]byte, error) {
 
 	buf := new(bytes.Buffer)
 	err := binary.Write(buf, binary.LittleEndian, obj.reqHeader)
+	if err != nil {
+		return nil, err
+	}
 	err = binary.Write(buf, binary.LittleEndian, obj.request)
+	if err != nil {
+		return nil, err
+	}
 	b, err := hex.DecodeString(obj.contentHex)
 	buf.Write(b)
 
@@ -82,19 +108,76 @@ func (obj *GetMinuteTimeData) UnSerialize(header interface{}, data []byte) error
 
 	pos := 0
 	err := binary.Read(bytes.NewBuffer(data[pos:pos+2]), binary.LittleEndian, &obj.reply.Count)
-	// 跳过4个字节
-	pos += 6
+	if err != nil {
+		return err
+	}
+	pos += 2
 
-	lastprice := 0
+	pos += 3 // reserved
+	pos += 6 // code
+
+	obj.reply.Reserved0 = fmt.Sprintf("%08b", data[pos:pos+2]) // reserved
+	pos += 2
+
+	obj.reply.CurrentPrice = getprice(data, &pos) // current price
+	for i := 0; i < 5; i++ {
+		_ = getprice(data, &pos) // reserved
+	}
+	obj.reply.VolumeAfter = getprice(data, &pos) // negative open? or 盘后量
+	if obj.reply.VolumeAfter < 0 {
+		obj.reply.VolumeAfter = -1
+	}
+
+	obj.reply.VolumeAll = getprice(data, &pos)     // total volume
+	obj.reply.VolumeCurrent = getprice(data, &pos) // current volume b3fd0f a107
+
+	tmp := uint32(0)
+	err = binary.Read(bytes.NewBuffer(data[pos:pos+4]), binary.LittleEndian, &tmp)
+	if err != nil {
+		return err
+	}
+	pos += 4
+	obj.reply.TradeAmmount = float32(getvolume(int(tmp))) // reserved 9d63504a e1c03750 成交额
+
+	obj.reply.VolumeSell = ParseInt(data, &pos) // reserved 内盘 9bed9904 9aad01
+	obj.reply.VolumeBuy = ParseInt(data, &pos)  // reserved 外盘 84cac702 8016
+
+	pos += 1 // reserved 00
+
+	obj.reply.Reserved1 = ParseInt(data, &pos) // reserved 9c8a9701 ad63 958f9705
+
+	// 3 档盘口
+	for i := 0; i < 3; i++ {
+		d1, d2 := ParseInt(data, &pos), ParseInt(data, &pos)
+		v1, v2 := ParseInt(data, &pos), ParseInt(data, &pos)
+		if d1 != obj.reply.CurrentPrice && d1 != -obj.reply.CurrentPrice {
+			obj.reply.Billboard = append(obj.reply.Billboard, BillboardRow{d1, v1})
+		}
+		if d2 != obj.reply.CurrentPrice && d2 != -obj.reply.CurrentPrice {
+			obj.reply.Billboard = append(obj.reply.Billboard, BillboardRow{d2, v2})
+		}
+	}
+	slices.SortFunc(obj.reply.Billboard, func(a, b BillboardRow) int {
+		return a.DeltaFromCurrentPrice - b.DeltaFromCurrentPrice
+	})
+
+	// 2byte reserved
+	obj.reply.Reserved2 = fmt.Sprintf("%08b", data[pos:pos+2]) // reserved
+	pos += 2
+
+	curPrice := 0
 	for index := uint16(0); index < obj.reply.Count; index++ {
-		priceraw := getprice(data, &pos)
-		getprice(data, &pos)
-		vol := getprice(data, &pos)
-		lastprice = lastprice + priceraw
-		ele := MinuteTimeData{float32(lastprice) / 100.0, vol}
+		curPrice += ParseInt(data, &pos)
+		r0 := getprice(data, &pos)
+		vol := ParseInt(data, &pos)
+		ele := MinuteTimeData{
+			Price:     curPrice,
+			Volume:    vol,
+			Reserved0: r0,
+		}
 		obj.reply.List = append(obj.reply.List, ele)
 	}
-	return err
+	return nil
 }
 
 func (obj *GetMinuteTimeData) Reply() *GetMinuteTimeDataReply {

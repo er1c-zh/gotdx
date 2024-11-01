@@ -1,39 +1,40 @@
 import * as d3 from "d3";
+import { useEffect, useState } from "react";
+import { FetchRealtimeData } from "../../wailsjs/go/api/App";
+import { LogInfo } from "../../wailsjs/runtime/runtime";
 
 type RealtimeGraphProps = {
   code: string;
-  data: number[];
   width: number;
   height: number;
-  marginTop: number;
-  marginRight: number;
-  marginBottom: number;
-  marginLeft: number;
 };
 function RealtimeGraph(props: RealtimeGraphProps) {
+  const [data, setData] = useState<number[]>([]);
   const x = d3.scaleLinear(
-    [0, props.data.length - 1],
-    [props.marginLeft, props.width - props.marginRight]
+    [0, data.length - 1],
+    [0, (props.width * data.length) / 240]
   );
   const y = d3.scaleLinear(
-    d3.extent(props.data).map((d) => d ?? 0),
-    [props.height - props.marginBottom, props.marginTop]
+    d3.extent(data).map((d) => d ?? 0),
+    [props.height, 0.0]
   );
   const line = d3.line((d, i) => x(i), y);
+
+  useEffect(() => {
+    FetchRealtimeData(props.code).then((data) => {
+      setData(data.Data.map((d) => d.Price / 100.0));
+    });
+  }, [props.code]);
+
   return (
-    <div>
+    <div className="flex items-center p-4">
       <svg width={props.width} height={props.height}>
         <path
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
-          d={line(props.data) ?? undefined}
+          d={line(data) ?? undefined}
         />
-        <g fill="white" stroke="currentColor" strokeWidth="1.5">
-          {props.data.map((d, i) => (
-            <circle key={i} cx={x(i)} cy={y(d)} r="2.5" />
-          ))}
-        </g>
       </svg>
     </div>
   );

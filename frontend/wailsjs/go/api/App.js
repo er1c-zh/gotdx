@@ -10,6 +10,10 @@ export function EmitProcessInfo(arg1) {
   return window['go']['api']['App']['EmitProcessInfo'](arg1);
 }
 
+export function FetchRealtimeData(arg1) {
+  return window['go']['api']['App']['FetchRealtimeData'](arg1);
+}
+
 export function FetchStatus() {
   return window['go']['api']['App']['FetchStatus']();
 }

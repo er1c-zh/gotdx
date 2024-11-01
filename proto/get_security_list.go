@@ -71,7 +71,7 @@ func (obj *GetSecurityList) Serialize() ([]byte, error) {
 func (obj *GetSecurityList) UnSerialize(header interface{}, data []byte) error {
 	obj.respHeader = header.(*RespHeader)
 
-	//fmt.Println(hex.EncodeToString(data))
+	// fmt.Println(hex.EncodeToString(data))
 	pos := 0
 	err := binary.Read(bytes.NewBuffer(data[pos:pos+2]), binary.LittleEndian, &obj.reply.Count)
 	pos += 2

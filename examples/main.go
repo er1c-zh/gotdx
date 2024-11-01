@@ -1,49 +1,29 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
-	"os"
 
 	"gotdx/tdx"
 )
 
 func main() {
-	f, err := os.Create("output_bj.txt")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer f.Close()
+	var err error
 
 	// ip地址如果失效，请自行替换
 	cli := tdx.New(tdx.WithTCPAddress("124.71.187.122:7709"))
+	// cli := tdx.New(tdx.WithTCPAddress("124.70.176.39:7615"))
 	_, err = cli.Connect()
 	if err != nil {
 		log.Fatalln(err)
 	}
 	defer cli.Disconnect()
 
-	cursor := uint16(0)
-	count := 0
-	for {
-		log.Println("doing")
-		reply, err := cli.GetSecurityList(4, cursor)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		count += int(reply.Count)
-
-		for _, obj := range reply.List {
-			fmt.Fprintf(f, "%s %032b %032b %s\n", obj.Code, obj.Reserved1, obj.Reserved2, obj.Name)
-		}
-
-		if len(reply.List) < 1000 {
-			break
-		}
-		cursor += 1000
+	reply, err := cli.GetMinuteTimeData(tdx.MarketSz, "300339")
+	if err != nil {
+		log.Println(err)
+		return
 	}
-
-	log.Printf("%d / 1000\n", count)
+	j, _ := json.MarshalIndent(reply, "", "  ")
+	log.Println(string(j))
 }

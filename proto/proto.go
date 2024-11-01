@@ -87,6 +87,10 @@ func seqID() uint32 {
 	return _seqId
 }
 
+func ParseInt(b []byte, pos *int) int {
+	return getprice(b, pos)
+}
+
 // pytdx : 类似utf-8的编码方式保存有符号数字
 func getprice(b []byte, pos *int) int {
 	/*
@@ -216,6 +220,10 @@ func getdatetimenow(category int, lasttime string) (year int, month int, day int
 	return
 }
 
+func ParseFloat(v int32) float64 {
+	return getvolume(int(v))
+}
+
 func getvolume(ivol int) (volume float64) {
 	logpoint := ivol >> (8 * 3)
 	//hheax := ivol >> (8 * 3)          // [3]
@@ -227,10 +235,10 @@ func getvolume(ivol int) (volume float64) {
 	//dbl_2 := 2.0
 	//dbl_128 := 128.0
 
-	dwEcx := logpoint*2 - 0x7f
-	dwEdx := logpoint*2 - 0x86
-	dwEsi := logpoint*2 - 0x8e
-	dwEax := logpoint*2 - 0x96
+	dwEcx := logpoint*2 - 0x7f // 0b0111 1111
+	dwEdx := logpoint*2 - 0x86 // 0b1000 0110
+	dwEsi := logpoint*2 - 0x8e // 0b1000 1110
+	dwEax := logpoint*2 - 0x96 // 0b1001 0110
 	tmpEax := dwEcx
 	if dwEcx < 0 {
 		tmpEax = -dwEcx

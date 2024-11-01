@@ -42,6 +42,7 @@ function App() {
 
   // command panel
   const [cmdPanelShow, setCmdPanelShow] = useState(false);
+  const [code, setCode] = useState("");
 
   return (
     <div id="App" className="container bg-gray-900 h-dvh">
@@ -73,26 +74,17 @@ function App() {
           </button>
         </div>
         <div id="realtime-graph" className="flex-1 bg-cyan-300">
-          <RealtimeGraph
-            code={""}
-            data={[1, 2, 3, 4, 5, 6]}
-            width={120}
-            height={100}
-            marginTop={0}
-            marginRight={0}
-            marginBottom={0}
-            marginLeft={0}
-          />
+          <RealtimeGraph code={code} width={800} height={400} />
         </div>
       </div>
-      {/* <div
+      <div
         id="command-panel"
         className={`${
           cmdPanelShow ? "" : "hidden"
         } w-screen fixed top-0 left-0`}
       >
-        <CommandPanel setIsShow={setCmdPanelShow} />
-      </div> */}
+        <CommandPanel setIsShow={setCmdPanelShow} setCode={setCode} />
+      </div>
     </div>
   );
 }

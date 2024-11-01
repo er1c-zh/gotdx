@@ -169,6 +169,8 @@ func (client *Client) GetSecurityQuotes(markets []uint8, codes []string) (*proto
 }
 
 // GetSecurityList 获取市场内指定范围内的所有证券代码
+// market 市场
+// start 游标
 func (client *Client) GetSecurityList(market uint8, start uint16) (*proto.GetSecurityListReply, error) {
 	client.mu.Lock()
 	defer client.mu.Unlock()

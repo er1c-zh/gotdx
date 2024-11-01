@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 interface CommandPanelProps {
   setIsShow: React.Dispatch<React.SetStateAction<boolean>>;
+  setCode: React.Dispatch<React.SetStateAction<string>>;
 }
 
 function CommandPanel(props: CommandPanelProps) {
@@ -19,6 +20,11 @@ function CommandPanel(props: CommandPanelProps) {
       } else if (!isShow && /^[0-9a-zA-Z]+$/.test(e.key)) {
         isShow = true;
         props.setIsShow(true);
+      } else if (isShow && e.key === "Enter") {
+        isShow = false;
+        props.setIsShow(false);
+        props.setCode(cmd);
+        setCmd("");
       }
     });
   });
