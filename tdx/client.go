@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/zlib"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -166,10 +165,13 @@ func (client *Client) do(msg proto.Msg) error {
 			goto debug_skip
 		}
 		defer f.Close()
-		_, err = f.Write(msgData)
-		if err != nil {
-			fmt.Println(err)
-			goto debug_skip
+
+		for _, d := range [][]byte{headerBytes, msgData} {
+			_, err = f.Write(d)
+			if err != nil {
+				fmt.Println(err)
+				goto debug_skip
+			}
 		}
 	debug_skip:
 	}
@@ -231,19 +233,22 @@ func (client *Client) GetSecurityCount(market uint16) (*proto.GetSecurityCountRe
 	return obj.Reply(), err
 }
 
+type StockQuery struct {
+	Market uint8
+	Code   string
+}
+
 // GetSecurityQuotes 获取盘口五档报价
-func (client *Client) GetSecurityQuotes(markets []uint8, codes []string) (*proto.GetSecurityQuotesReply, error) {
+func (client *Client) GetSecurityQuotes(stockList []StockQuery) (*proto.GetSecurityQuotesReply, error) {
 	client.mu.Lock()
 	defer client.mu.Unlock()
-	if len(markets) != len(codes) {
-		return nil, errors.New("market code count error")
-	}
+
 	obj := proto.NewGetSecurityQuotes()
 	var params []proto.Stock
-	for i, market := range markets {
+	for _, stock := range stockList {
 		params = append(params, proto.Stock{
-			Market: market,
-			Code:   codes[i],
+			Market: stock.Market,
+			Code:   stock.Code,
 		})
 	}
 	obj.SetParams(&proto.GetSecurityQuotesRequest{StockList: params})

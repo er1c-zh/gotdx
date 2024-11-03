@@ -49,7 +49,7 @@ func TestGetprice(t *testing.T) {
 		}
 		var cursor = 0
 
-		t.Logf("%s %d", s, getprice(bytes, &cursor))
+		t.Logf("%s %d", s, ParseInt(bytes, &cursor))
 	}
 }
 

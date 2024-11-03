@@ -108,11 +108,11 @@ func (obj *GetIndexBars) UnSerialize(header interface{}, data []byte) error {
 		//}
 		ele.DateTime = fmt.Sprintf("%d-%02d-%02d %02d:%02d:00", ele.Year, ele.Month, ele.Day, ele.Hour, ele.Minute)
 
-		price_open_diff := getprice(data, &pos)
-		price_close_diff := getprice(data, &pos)
+		price_open_diff := ParseInt(data, &pos)
+		price_close_diff := ParseInt(data, &pos)
 
-		price_high_diff := getprice(data, &pos)
-		price_low_diff := getprice(data, &pos)
+		price_high_diff := ParseInt(data, &pos)
+		price_low_diff := ParseInt(data, &pos)
 
 		var ivol uint32
 		binary.Read(bytes.NewBuffer(data[pos:pos+4]), binary.LittleEndian, &ivol)

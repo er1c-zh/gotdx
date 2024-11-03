@@ -3,6 +3,9 @@ package proto
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
+	"errors"
+	"fmt"
 	"math"
 	"sync/atomic"
 	"time"
@@ -16,12 +19,14 @@ const (
 const (
 
 	// verifed
-	KMSG_CMD1      = 0x000D // 建立链接
-	KMSG_CMD2      = 0x0FDB // 建立链接
-	KMSG_Heartbeat = 0x0004 // 心跳
+	KMSG_CMD1                  = 0x000D // 建立链接
+	KMSG_CMD2                  = 0x0FDB // 建立链接
+	KMSG_Heartbeat             = 0x0004 // 心跳
+	KMSG_MINUTETIMEDATA        = 0x051D // 分时数据
+	KMSG_HISTORYMINUTETIMEDATE = 0x0FB4 // 历史分时信息
 
 	// working on
-	KMSG_HISTORYMINUTETIMEDATE = 0x0FB4 // 历史分时信息
+	KMSG_IndexList = 0x054C // 首页数据 3s 一次定时刷新
 
 	// won't imply
 	KMSG_FileHash  = 0x02C5 // 文件信息 返回文件的 HASH md5?
@@ -36,7 +41,6 @@ const (
 	KMSG_HISTORYTRANSACTIONDATA = 0x0FB5 // 历史分笔成交信息
 	KMSG_INDEXBARS              = 0x052D // 指数K线
 	KMSG_SECURITYBARS           = 0x052D // 股票K线
-	KMSG_MINUTETIMEDATA         = 0x0537 // 分时数据
 	KMSG_SECURITYLIST           = 0x0450 // 证券列表
 	KMSG_SECURITYQUOTES         = 0x053E // 行情信息
 	KMSG_TRANSACTIONDATA        = 0x0FC5 // 分笔成交信息
@@ -96,12 +100,56 @@ func GenSeqID() uint32 {
 	return _seqId
 }
 
-func ParseInt(b []byte, pos *int) int {
-	return getprice(b, pos)
+func ReadAsByteArray(b []byte, pos *int, length int) ([]byte, error) {
+	if *pos+length > len(b) {
+		return nil, errors.New("ReadAsByteArray overflow")
+	}
+	defer func() {
+		*pos += length
+	}()
+	return b[*pos : *pos+length], nil
+}
+
+func ReadAsInt[T any](b []byte, pos *int, _type T) (T, error) {
+	var length int = 0
+	switch any(_type).(type) {
+	case int8, uint8:
+		length = 1
+	case int16, uint16:
+		length = 2
+	case int32, uint32, int, uint:
+		length = 4
+	case int64, uint64:
+		length = 8
+	default:
+		return _type, fmt.Errorf("unsupported type:%T", _type)
+	}
+	err := binary.Read(bytes.NewBuffer(b[*pos:*pos+length]), binary.LittleEndian, &_type)
+	if err != nil {
+		return _type, fmt.Errorf("ReadAsInt error:%s", err)
+	}
+	*pos += length
+	return _type, nil
+}
+
+func ReadByteToHex(b []byte, pos *int, count int) (string, error) {
+	if *pos+count > len(b) {
+		return "", errors.New("ReadByteToHex overflow")
+	}
+
+	defer func() {
+		*pos += count
+	}()
+
+	return hex.EncodeToString(b[*pos : *pos+count]), nil
+}
+
+func ReadInt(b []byte, pos *int) (int, error) {
+	return ParseInt(b, pos), nil
 }
 
 // pytdx : 类似utf-8的编码方式保存有符号数字
-func getprice(b []byte, pos *int) int {
+func ParseInt(b []byte, pos *int) int {
 	/*
 		    0x7f与常量做与运算实质是保留常量（转换为二进制形式）的后7位数，既取值区间为[0,127]
 		    0x3f与常量做与运算实质是保留常量（转换为二进制形式）的后6位数，既取值区间为[0,63]
@@ -227,6 +275,69 @@ func getdatetimenow(category int, lasttime string) (year int, month int, day int
 	month = int(utime.Month())
 	day = utime.Day()
 	return
+}
+
+func ReadFloat(data []byte, pos *int) (float64, error) {
+	if len(data) < *pos+4 {
+		return 0, errors.New("read float overflow")
+	}
+	lleax := int(data[*pos]) //[0]
+	*pos += 1
+	lheax := int(data[*pos]) //[1]
+	*pos += 1
+	hleax := int(data[*pos]) // [2]
+	*pos += 1
+	logpoint := int(data[*pos])
+	*pos += 1
+
+	//dbl_1 := 1.0
+	//dbl_2 := 2.0
+	//dbl_128 := 128.0
+
+	dwEcx := logpoint*2 - 0x7f // 0b0111 1111
+	dwEdx := logpoint*2 - 0x86 // 0b1000 0110
+	dwEsi := logpoint*2 - 0x8e // 0b1000 1110
+	dwEax := logpoint*2 - 0x96 // 0b1001 0110
+	tmpEax := dwEcx
+	if dwEcx < 0 {
+		tmpEax = -dwEcx
+	} else {
+		tmpEax = dwEcx
+	}
+
+	dbl_xmm6 := 0.0
+	dbl_xmm6 = math.Pow(2.0, float64(tmpEax))
+	if dwEcx < 0 {
+		dbl_xmm6 = 1.0 / dbl_xmm6
+	}
+
+	dbl_xmm4 := 0.0
+	dbl_xmm0 := 0.0
+
+	if hleax > 0x80 {
+		tmpdbl_xmm3 := 0.0
+		//tmpdbl_xmm1 := 0.0
+		dwtmpeax := dwEdx + 1
+		tmpdbl_xmm3 = math.Pow(2.0, float64(dwtmpeax))
+		dbl_xmm0 = math.Pow(2.0, float64(dwEdx)) * 128.0
+		dbl_xmm0 += float64(hleax&0x7f) * tmpdbl_xmm3
+		dbl_xmm4 = dbl_xmm0
+	} else {
+		if dwEdx >= 0 {
+			dbl_xmm0 = math.Pow(2.0, float64(dwEdx)) * float64(hleax)
+		} else {
+			dbl_xmm0 = (1 / math.Pow(2.0, float64(dwEdx))) * float64(hleax)
+		}
+		dbl_xmm4 = dbl_xmm0
+	}
+
+	dbl_xmm3 := math.Pow(2.0, float64(dwEsi)) * float64(lheax)
+	dbl_xmm1 := math.Pow(2.0, float64(dwEax)) * float64(lleax)
+	if (hleax & 0x80) > 0 {
+		dbl_xmm3 *= 2.0
+		dbl_xmm1 *= 2.0
+	}
+	return dbl_xmm6 + dbl_xmm4 + dbl_xmm3 + dbl_xmm1, nil
 }
 
 func ParseFloat(v int32) float64 {

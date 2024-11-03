@@ -63,8 +63,7 @@ func NewGetMinuteTimeData() *GetMinuteTimeData {
 	obj.reqHeader.PacketType = 0x00
 	//obj.reqHeader.PkgLen1  =
 	//obj.reqHeader.PkgLen2  =
-	obj.reqHeader.Method = 0x051d
-	//obj.reqHeader.Method = KMSG_MINUTETIMEDATA
+	obj.reqHeader.Method = KMSG_MINUTETIMEDATA
 	obj.contentHex = ""
 	return obj
 }
@@ -117,17 +116,17 @@ func (obj *GetMinuteTimeData) UnSerialize(header interface{}, data []byte) error
 	obj.reply.Reserved0 = fmt.Sprintf("%08b", data[pos:pos+2]) // reserved
 	pos += 2
 
-	obj.reply.CurrentPrice = getprice(data, &pos) // current price
+	obj.reply.CurrentPrice = ParseInt(data, &pos) // current price
 	for i := 0; i < 5; i++ {
-		_ = getprice(data, &pos) // reserved
+		_ = ParseInt(data, &pos) // reserved
 	}
-	obj.reply.VolumeAfter = getprice(data, &pos) // negative open? or 盘后量
+	obj.reply.VolumeAfter = ParseInt(data, &pos) // negative open? or 盘后量
 	if obj.reply.VolumeAfter < 0 {
 		obj.reply.VolumeAfter = -1
 	}
 
-	obj.reply.VolumeAll = getprice(data, &pos)     // total volume
-	obj.reply.VolumeCurrent = getprice(data, &pos) // current volume b3fd0f a107
+	obj.reply.VolumeAll = ParseInt(data, &pos)     // total volume
+	obj.reply.VolumeCurrent = ParseInt(data, &pos) // current volume b3fd0f a107
 
 	tmp := uint32(0)
 	err = binary.Read(bytes.NewBuffer(data[pos:pos+4]), binary.LittleEndian, &tmp)
@@ -166,7 +165,7 @@ func (obj *GetMinuteTimeData) UnSerialize(header interface{}, data []byte) error
 	curPrice := 0
 	for index := uint16(0); index < obj.reply.Count; index++ {
 		curPrice += ParseInt(data, &pos)
-		r0 := getprice(data, &pos)
+		r0 := ParseInt(data, &pos)
 		vol := ParseInt(data, &pos)
 		ele := MinuteTimeData{
 			Price:     curPrice,

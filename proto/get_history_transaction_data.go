@@ -90,10 +90,10 @@ func (obj *GetHistoryTransactionData) UnSerialize(header interface{}, data []byt
 		ele := HistoryTransactionData{}
 		h, m := gettime(data, &pos)
 		ele.Time = fmt.Sprintf("%02d:%02d", h, m)
-		priceraw := getprice(data, &pos)
-		ele.Vol = getprice(data, &pos)
-		ele.BuyOrSell = getprice(data, &pos)
-		getprice(data, &pos)
+		priceraw := ParseInt(data, &pos)
+		ele.Vol = ParseInt(data, &pos)
+		ele.BuyOrSell = ParseInt(data, &pos)
+		ParseInt(data, &pos)
 
 		lastprice = lastprice + priceraw
 		ele.Price = float64(lastprice) / baseUnit(string(obj.request.Code[:]))

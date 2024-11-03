@@ -88,13 +88,13 @@ func (obj *GetTransactionData) UnSerialize(header interface{}, data []byte) erro
 		ele := TransactionData{}
 		hour, minute := gettime(data, &pos)
 		ele.Time = fmt.Sprintf("%02d:%02d", hour, minute)
-		priceraw := getprice(data, &pos)
-		ele.Vol = getprice(data, &pos)
-		ele.Num = getprice(data, &pos)
-		ele.BuyOrSell = getprice(data, &pos)
+		priceraw := ParseInt(data, &pos)
+		ele.Vol = ParseInt(data, &pos)
+		ele.Num = ParseInt(data, &pos)
+		ele.BuyOrSell = ParseInt(data, &pos)
 		lastprice += priceraw
 		ele.Price = float64(lastprice) / baseUnit(string(obj.request.Code[:]))
-		_ = getprice(data, &pos)
+		_ = ParseInt(data, &pos)
 		obj.reply.List = append(obj.reply.List, ele)
 	}
 	return err

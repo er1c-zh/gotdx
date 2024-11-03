@@ -15,3 +15,13 @@ struct resp_header {
 
 //req_header h;
 resp_header h;
+struct stock_item {
+    byte market;
+    byte code[6];
+    int16 r0;
+    byte price_skip[8];
+};
+int16 r0;
+int16 count;
+
+stock_item si1;

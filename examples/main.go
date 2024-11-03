@@ -20,7 +20,13 @@ func main() {
 	}
 	defer cli.Disconnect()
 
-	reply, err := cli.GetHistoryMinuteTimeData(tdx.MarketSz, "000100", 20241101)
+	reply, err := cli.GetSecurityQuotes([]tdx.StockQuery{
+		{Market: tdx.MarketSz, Code: "000100"},
+		{Market: tdx.MarketSh, Code: "600000"},
+		{Market: tdx.MarketSz, Code: "001979"},
+		{Market: tdx.MarketSh, Code: "600048"},
+		{Market: tdx.MarketSz, Code: "300748"},
+	})
 	if err != nil {
 		log.Println(err)
 		return
