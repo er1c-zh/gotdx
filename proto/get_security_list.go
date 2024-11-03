@@ -42,7 +42,7 @@ func NewGetSecurityList() *GetSecurityList {
 	obj.reply = new(GetSecurityListReply)
 
 	obj.reqHeader.Zip = 0x0c
-	obj.reqHeader.SeqID = seqID()
+	obj.reqHeader.SeqID = GenSeqID()
 	obj.reqHeader.PacketType = 0x01
 	obj.reqHeader.Method = KMSG_SECURITYLIST
 	return obj

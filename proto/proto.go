@@ -14,17 +14,25 @@ const (
 )
 
 const (
-	KMSG_CMD1                   = 0x000D // 建立链接
-	KMSG_CMD2                   = 0x0FDB // 建立链接
+
+	// verifed
+	KMSG_CMD1      = 0x000D // 建立链接
+	KMSG_CMD2      = 0x0FDB // 建立链接
+	KMSG_Heartbeat = 0x0004 // 心跳
+
+	// working on
+	KMSG_HISTORYMINUTETIMEDATE = 0x0FB4 // 历史分时信息
+
+	// won't imply
+	KMSG_FileHash  = 0x02C5 // 文件信息 返回文件的 HASH md5?
+	KMSG_FetchFile = 0x06B9 // 文件 0x02C5 如果验证 hash 不一致会调用 直接返回数据
+
+	// wait test
 	KMSG_PING                   = 0x0015 // 测试连接
-	KMSG_HEARTBEAT              = 0x0004 // 心跳
 	KMSG_SECURITYCOUNT          = 0x044E // 证券数量
-	KMSG_BLOCKINFOMETA          = 0x02C5 // 板块文件信息
-	KMSG_BLOCKINFO              = 0x06B9 // 板块文件
 	KMSG_COMPANYCATEGORY        = 0x02CF // 公司信息文件信息
 	KMSG_COMPANYCONTENT         = 0x02D0 // 公司信息描述
 	KMSG_FINANCEINFO            = 0x0010 // 财务信息
-	KMSG_HISTORYMINUTETIMEDATE  = 0x0FB4 // 历史分时信息
 	KMSG_HISTORYTRANSACTIONDATA = 0x0FB5 // 历史分笔成交信息
 	KMSG_INDEXBARS              = 0x052D // 指数K线
 	KMSG_SECURITYBARS           = 0x052D // 股票K线
@@ -73,16 +81,17 @@ type ReqHeader struct {
 }
 
 type RespHeader struct {
-	I1        uint32
-	I2        uint8
-	SeqID     uint32 // 请求编号
-	I3        uint8
-	Method    uint16 // method
-	ZipSize   uint16 // 长度
-	UnZipSize uint16 // 未压缩长度
+	I1     uint32
+	I2     uint8
+	SeqID  uint32 // 请求编号
+	I3     uint8
+	Method uint16 // method
+	// TODO 有时这个 PkgDataSize > RawDataSize
+	PkgDataSize uint16 // 长度
+	RawDataSize uint16 // 未压缩长度
 }
 
-func seqID() uint32 {
+func GenSeqID() uint32 {
 	atomic.AddUint32(&_seqId, 1)
 	return _seqId
 }

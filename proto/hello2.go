@@ -31,7 +31,7 @@ func NewHello2() *Hello2 {
 	obj.reply = new(Hello2Reply)
 
 	obj.reqHeader.Zip = 0x0c
-	obj.reqHeader.SeqID = seqID()
+	obj.reqHeader.SeqID = GenSeqID()
 	obj.reqHeader.PacketType = 0x01
 	obj.reqHeader.Method = KMSG_CMD2
 	obj.contentHex = "d5d0c9ccd6a4a8af0000008fc22540130000d500c9ccbdf0d7ea00000002"

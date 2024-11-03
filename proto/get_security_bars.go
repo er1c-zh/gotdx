@@ -55,7 +55,7 @@ func NewGetSecurityBars() *GetSecurityBars {
 	obj.reply = new(GetSecurityBarsReply)
 
 	obj.reqHeader.Zip = 0x0c
-	obj.reqHeader.SeqID = seqID()
+	obj.reqHeader.SeqID = GenSeqID()
 	obj.reqHeader.PacketType = 0x00
 	//obj.reqHeader.PkgLen1  =
 	//obj.reqHeader.PkgLen2  =

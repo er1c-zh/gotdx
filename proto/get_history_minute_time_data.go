@@ -3,7 +3,6 @@ package proto
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/hex"
 )
 
 type GetHistoryMinuteTimeData struct {
@@ -22,12 +21,13 @@ type GetHistoryMinuteTimeDataRequest struct {
 }
 
 type GetHistoryMinuteTimeDataReply struct {
-	Count uint16
-	List  []HistoryMinuteTimeData
+	Count     uint16
+	PriceUnit int
+	List      []HistoryMinuteTimeData
 }
 
 type HistoryMinuteTimeData struct {
-	Price float32
+	Price int
 	Vol   int
 }
 
@@ -39,12 +39,9 @@ func NewGetHistoryMinuteTimeData() *GetHistoryMinuteTimeData {
 	obj.reply = new(GetHistoryMinuteTimeDataReply)
 
 	obj.reqHeader.Zip = 0x0c
-	obj.reqHeader.SeqID = seqID()
+	obj.reqHeader.SeqID = GenSeqID()
 	obj.reqHeader.PacketType = 0x00
-	//obj.reqHeader.PkgLen1  =
-	//obj.reqHeader.PkgLen2  =
 	obj.reqHeader.Method = KMSG_HISTORYMINUTETIMEDATE
-	//obj.reqHeader.Method = KMSG_MINUTETIMEDATA
 	obj.contentHex = ""
 	return obj
 }
@@ -59,14 +56,15 @@ func (obj *GetHistoryMinuteTimeData) Serialize() ([]byte, error) {
 
 	buf := new(bytes.Buffer)
 	err := binary.Write(buf, binary.LittleEndian, obj.reqHeader)
+	if err != nil {
+		return nil, err
+	}
 	err = binary.Write(buf, binary.LittleEndian, obj.request)
-	b, err := hex.DecodeString(obj.contentHex)
-	buf.Write(b)
-
-	//b, err := hex.DecodeString(obj.contentHex)
-	//buf.Write(b)
-
-	//err = binary.Write(buf, binary.LittleEndian, uint16(len(obj.stocks)))
+	if err != nil {
+		return nil, err
+	}
+	// b, err := hex.DecodeString(obj.contentHex)
+	// buf.Write(b)
 
 	return buf.Bytes(), err
 }
@@ -80,27 +78,23 @@ func (obj *GetHistoryMinuteTimeData) UnSerialize(header interface{}, data []byte
 
 	pos := 0
 	err := binary.Read(bytes.NewBuffer(data[pos:pos+2]), binary.LittleEndian, &obj.reply.Count)
+	if err != nil {
+		return err
+	}
 	pos += 2
 	// 跳过4个字节 功能未解析
-	_, _, _, bType := data[pos], data[pos+1], data[pos+2], data[pos+3]
+	_, _, _, _ = data[pos], data[pos+1], data[pos+2], data[pos+3]
 	pos += 4
 
-	lastprice := 0
+	obj.reply.PriceUnit = 100
+
+	curPrice := 0
 	for index := uint16(0); index < obj.reply.Count; index++ {
-		priceraw := getprice(data, &pos)
-		_ = getprice(data, &pos)
-		vol := getprice(data, &pos)
-		lastprice += priceraw
+		curPrice += ParseInt(data, &pos)
+		_ = ParseInt(data, &pos)
+		vol := ParseInt(data, &pos)
 
-		var p float32
-		if bType > 0x40 {
-			p = float32(lastprice) / 100.0
-		} else {
-			p = float32(lastprice) / 1000.0
-		}
-
-		ele := HistoryMinuteTimeData{Price: p,
-			Vol: vol}
+		ele := HistoryMinuteTimeData{Price: curPrice, Vol: vol}
 		obj.reply.List = append(obj.reply.List, ele)
 	}
 	return err

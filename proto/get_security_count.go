@@ -30,7 +30,7 @@ func NewGetSecurityCount() *GetSecurityCount {
 	obj.reply = new(GetSecurityCountReply)
 
 	obj.reqHeader.Zip = 0x0c
-	obj.reqHeader.SeqID = seqID()
+	obj.reqHeader.SeqID = GenSeqID()
 	obj.reqHeader.PacketType = 0x01
 	obj.reqHeader.Method = KMSG_SECURITYCOUNT
 	obj.contentHex = "75c73301" // 未解

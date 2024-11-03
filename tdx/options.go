@@ -17,6 +17,7 @@ type Options struct {
 	MaxRetryTimes     int      // 重试次数
 	HeartbeatInterval time.Duration
 	MsgCallback       func(models.ProcessInfo)
+	Debug             bool
 }
 
 func defaultOptions() *Options {
@@ -66,6 +67,13 @@ func (Option Option) WithHeartbitInterval(interval time.Duration) Option {
 func (Option Option) WithMsgCallback(callback func(models.ProcessInfo)) Option {
 	return func(o *Options) {
 		o.MsgCallback = callback
+		Option(o)
+	}
+}
+
+func (Option Option) WithDebugMode() Option {
+	return func(o *Options) {
+		o.Debug = true
 		Option(o)
 	}
 }

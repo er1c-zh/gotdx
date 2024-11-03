@@ -9,9 +9,9 @@ struct resp_header {
     uint32 seq_id;
     byte r2;
     uint16 method;
-    uint16 zip_size;
+    uint16 size_in_packet;
     uint16 raw_size;
 };
 
-// req_header h;
+//req_header h;
 resp_header h;

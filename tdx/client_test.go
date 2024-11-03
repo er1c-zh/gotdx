@@ -8,7 +8,7 @@ import (
 )
 
 func newClient() *Client {
-	tdx := New(WithTCPAddress("124.71.187.122:7709"))
+	tdx := New(DefaultOption.WithTCPAddress("124.71.187.122:7709"))
 	reply, err := tdx.Connect()
 	if err != nil {
 		fmt.Println(err)
@@ -19,7 +19,7 @@ func newClient() *Client {
 
 func Test_tdx_Connect(t *testing.T) {
 	fmt.Println("================ Connect ================")
-	tdx := New(WithTCPAddress("124.71.187.122:7709"))
+	tdx := New(DefaultOption.WithTCPAddress("124.71.187.122:7709"))
 	defer tdx.Disconnect()
 	reply, err := tdx.Connect()
 	if err != nil {

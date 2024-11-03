@@ -14,11 +14,11 @@ func NewHeartbeat() *Heartbeat {
 	obj := new(Heartbeat)
 	obj.ReqHeader = new(ReqHeader)
 	obj.ReqHeader.Zip = 0x0c
-	obj.ReqHeader.SeqID = seqID()
+	obj.ReqHeader.SeqID = GenSeqID()
 	obj.ReqHeader.PacketType = 0x02
 	obj.ReqHeader.PkgLen1 = 0x02
 	obj.ReqHeader.PkgLen2 = 0x02
-	obj.ReqHeader.Method = KMSG_HEARTBEAT
+	obj.ReqHeader.Method = KMSG_Heartbeat
 
 	return obj
 }

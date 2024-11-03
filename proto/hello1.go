@@ -31,7 +31,7 @@ func NewHello1() *Hello1 {
 	obj.reply = new(Hello1Reply)
 
 	obj.reqHeader.Zip = 0x0c
-	obj.reqHeader.SeqID = seqID()
+	obj.reqHeader.SeqID = GenSeqID()
 	obj.reqHeader.PacketType = 0x01
 	obj.reqHeader.Method = KMSG_CMD1
 	obj.contentHex = "01"

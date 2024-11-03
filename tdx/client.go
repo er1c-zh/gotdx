@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
 	"sync"
 	"time"
 
@@ -98,8 +99,8 @@ func ParseRespHeader(data []byte) (*proto.RespHeader, error) {
 		return nil, err
 	}
 
-	if header.ZipSize > proto.MessageMaxBytes {
-		log.Printf("msgData has bytes(%d) beyond max %d\n", header.ZipSize, proto.MessageMaxBytes)
+	if header.PkgDataSize > proto.MessageMaxBytes {
+		log.Printf("msgData has bytes(%d) beyond max %d\n", header.PkgDataSize, proto.MessageMaxBytes)
 		return nil, ErrBadData
 	}
 	return &header, nil
@@ -141,23 +142,44 @@ func (client *Client) do(msg proto.Msg) error {
 		return err
 	}
 
-	msgData := make([]byte, header.ZipSize)
+	msgData := make([]byte, header.PkgDataSize)
 	_, err = io.ReadFull(client.conn, msgData)
 	if err != nil {
 		return err
 	}
 
 	var out bytes.Buffer
-	if header.ZipSize != header.UnZipSize {
+	if header.PkgDataSize != header.RawDataSize {
 		b := bytes.NewReader(msgData)
 		r, _ := zlib.NewReader(b)
-		io.Copy(&out, r)
-		err = msg.UnSerialize(header, out.Bytes())
-	} else {
-		err = msg.UnSerialize(header, msgData)
+		_, err = io.Copy(&out, r)
+		if err != nil {
+			return err
+		}
+		msgData = out.Bytes()
 	}
 
-	return err
+	if client.opt.Debug {
+		f, err := os.OpenFile(fmt.Sprintf("%d_%04X.bin", time.Now().Unix(), header.Method), os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			fmt.Println(err)
+			goto debug_skip
+		}
+		defer f.Close()
+		_, err = f.Write(msgData)
+		if err != nil {
+			fmt.Println(err)
+			goto debug_skip
+		}
+	debug_skip:
+	}
+
+	err = msg.UnSerialize(header, msgData)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Connect 连接券商行情服务器
@@ -312,7 +334,7 @@ func (client *Client) GetMinuteTimeData(market uint8, code string) (*proto.GetMi
 }
 
 // GetHistoryMinuteTimeData 获取历史分时图数据
-func (client *Client) GetHistoryMinuteTimeData(date uint32, market uint8, code string) (*proto.GetHistoryMinuteTimeDataReply, error) {
+func (client *Client) GetHistoryMinuteTimeData(market uint8, code string, date uint32) (*proto.GetHistoryMinuteTimeDataReply, error) {
 	client.mu.Lock()
 	defer client.mu.Unlock()
 	obj := proto.NewGetHistoryMinuteTimeData()

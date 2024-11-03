@@ -93,7 +93,7 @@ func NewGetSecurityQuotes() *GetSecurityQuotes {
 	obj.reply = new(GetSecurityQuotesReply)
 
 	obj.reqHeader.Zip = 0x0c
-	obj.reqHeader.SeqID = seqID()
+	obj.reqHeader.SeqID = GenSeqID()
 	obj.reqHeader.PacketType = 0x01
 	obj.reqHeader.Method = KMSG_SECURITYQUOTES
 	obj.contentHex = "0500000000000000"
