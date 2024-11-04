@@ -66,24 +66,20 @@ func (c *Client) init() error {
 	go func() {
 		// TODO recover panic
 		for {
+			c.Log("heartbeat ticker")
 			select {
 			case <-c.heartbeatTicker.C:
+				c.Log("heartbeat %t", c.connected)
 				if !c.connected {
 					continue
 				}
 				t0 := time.Now()
-				err := c.heartbeat()
+				err := c.Heartbeat()
 				if err != nil {
-					c.muConn.Lock()
-					c.connected = false
-					c.muConn.Unlock()
-					c.opt.MsgCallback(models.ProcessInfo{
-						Msg: fmt.Sprintf("[%s] Detected connection broken, cost %d ms.", t0.Format("15:04:05"), time.Since(t0).Milliseconds()),
-					})
+					c.resetConn()
+					c.Log("heartbeat fail: %v", err)
 				} else {
-					c.opt.MsgCallback(models.ProcessInfo{
-						Msg: fmt.Sprintf("[%s] 心跳成功, cost %d ms.", t0.Format("15:04:05"), time.Since(t0).Milliseconds()),
-					})
+					c.Log("heartbeat success, cost: %d ms", time.Since(t0).Milliseconds())
 				}
 			case <-c.done:
 				return
@@ -106,7 +102,7 @@ func do[T Codec](c *Client, api T) error {
 	if c == nil {
 		return fmt.Errorf("client is nil")
 	}
-	c.opt.MsgCallback(models.ProcessInfo{Msg: "do start."})
+	c.Log("start do")
 	var err error
 	reqHeader := ReqHeader{
 		Zip:        0x0C,
@@ -156,10 +152,6 @@ func do[T Codec](c *Client, api T) error {
 		return err
 	}
 	return nil
-}
-
-func (c *Client) heartbeat() error {
-	panic("implement me!")
 }
 
 // public
@@ -251,10 +243,13 @@ func (c *Client) Connect() error {
 	if err != nil {
 		return err
 	}
+	c.Log("set connected")
+	c.connected = true
 	return nil
 }
 
 func (c *Client) resetConn() {
+	c.Log("reset conn")
 	c.muConn.Lock()
 	defer c.muConn.Unlock()
 	if c.conn != nil {
@@ -269,15 +264,19 @@ func (c *Client) Disconnect() error {
 
 func (c *Client) Handshake() error {
 	handshake := &Handshake{}
-	handshake.SetDebug(c.ctx)
 	err := do(c, handshake)
 	if err != nil {
 		return err
 	}
-	c.opt.MsgCallback(models.ProcessInfo{Msg: handshake.ContentHex})
 	return nil
 }
 
 func (c *Client) Heartbeat() error {
-	panic("implement me!")
+	c.Log("call heartbeat")
+	heartbeat := &Heartbeat{}
+	err := do(c, heartbeat)
+	if err != nil {
+		return err
+	}
+	return nil
 }

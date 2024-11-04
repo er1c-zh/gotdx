@@ -13,8 +13,8 @@ struct resp_header {
     uint16 raw_size;
 };
 
-//req_header h;
-resp_header h;
+req_header h;
+//resp_header h;
 struct stock_item {
     byte market;
     byte code[6];

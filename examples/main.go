@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"gotdx/models"
 	ee "gotdx/proto/v2"
@@ -22,6 +23,7 @@ func main() {
 		return
 	}
 	fmt.Printf("connected\n")
+	time.Sleep(60 * time.Second)
 }
 
 func main1() {
