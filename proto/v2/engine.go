@@ -61,7 +61,7 @@ func NewClient(opt tdx.Option) *Client {
 
 // private
 func (c *Client) init() error {
-	c.seqID = rand.Uint32()
+	c.seqID = rand.Uint32()%100000 + 600000
 	// heartbeat ticker
 	go func() {
 		// TODO recover panic
@@ -239,7 +239,7 @@ func (c *Client) Connect() error {
 		}
 		c.resetConn()
 	}()
-	err = c.Handshake()
+	err = c.Heartbeat()
 	if err != nil {
 		return err
 	}

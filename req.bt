@@ -1,0 +1,27 @@
+// 1 0 1 0 0 0 0 0 1 1 1 20 131 10 0 0 0 101 3 0 13 1 0 402
+LittleEndian();
+struct req_header {
+	byte Zip;	uint32 SeqID;	byte PacketType;	uint16 PkgLen1;	uint16 PkgLen2;	uint16 Method;
+};
+struct resp_header {
+    int32 r0;
+    byte r1;
+    uint32 seq_id;
+    byte r2;
+    uint16 method;
+    uint16 size_in_packet;
+    uint16 raw_size;
+};
+
+req_header h;
+//resp_header h;
+struct stock_item {
+    byte market;
+    byte code[6];
+    int16 r0;
+    byte price_skip[8];
+};
+//int16 r0;
+//int16 count;
+
+//stock_item si1;
