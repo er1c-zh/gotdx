@@ -1,107 +1,68 @@
 package v2
 
 import (
-	"bytes"
 	"context"
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
 )
 
-func (c *Client) List(stockList []StockQuery) (*ListResp, error) {
+func (c *Client) Rank(schemaKey string) (*ListResp, error) {
 	var err error
-	l := List{}
-	l.ListReq.Items = make([]ListReqItem, 0, len(stockList))
-	for _, stock := range stockList {
-		reqItem := ListReqItem{
-			Market: stock.Market,
-		}
-		reqItem.Code, err = GenerateCodeBytesArray(stock.Code)
-		if err != nil {
-			return nil, err
-		}
+	r := Rank{}
 
-		l.ListReq.Items = append(l.ListReq.Items, reqItem)
+	switch schemaKey {
+	case "delta-desc-all":
+		r.StaticCodec.SetContentHex(c.ctx, "06002e0000002a0001000500000001000000")
+	case "delta-desc-exclude-bj":
+		r.StaticCodec.SetContentHex(c.ctx, "06002e0000002a0000000500260001000000")
+	default:
+		// all A share order by code asc
+		r.StaticCodec.SetContentHex(c.ctx, "0600000000002a0000000500000001000000")
 	}
-	err = do(c, &l)
+
+	// r.SetDebug(c.ctx)
+
+	err = do(c, &r)
 	if err != nil {
 		return nil, err
 	}
-	return &l.Resp, nil
+	return &r.Resp, nil
 }
 
-type List struct {
+type Rank struct {
 	BlankCodec
-	ListReq
+	StaticCodec
 	Resp ListResp
 }
 
-type ListReq struct {
-	StaticCodec
-	Items []ListReqItem
-}
-
-type ListReqItem struct {
-	Market uint8
-	Code   [6]byte
-}
-
-type ListResp struct {
-	Reserved0 uint16
-	Count     uint16
-	List      []ListRespItem
-}
-type ListRespItem struct {
-	Market             uint8
-	Code               string
-	SplitFlag          uint16
-	CurPrice           int
-	YesterdayOpenDelta int
-	OpenDelta          int
-	HighDelta          int
-	LowDelta           int
-	Reserved0          int
-	NegativeCurPrice   int // ?
-	TotalVolume        int
-	CurrentVolume      int
-	TotalAmount        float64
-	SellVolume         int
-	BuyVolume          int
-	Reserved1          int
-	Reserved2          int
-
-	BuyPriceDelta1  int
-	SellPriceDelta1 int
-	BuyVolume1      int
-	SellVolume1     int
-
-	Reserved3 []byte
-
-	SplitFlagEnd uint16
-}
-
-func (l *List) FillReqHeader(ctx context.Context, header *ReqHeader) error {
-	header.Method = 0x054C
+func (r *Rank) FillReqHeader(ctx context.Context, header *ReqHeader) error {
+	header.Method = 0x054B
 	header.PacketType = 2
 	return nil
 }
 
-func (l *List) UnmarshalResp(ctx context.Context, data []byte) error {
+func (r *Rank) MarshalReqBody(ctx context.Context) ([]byte, error) {
+	return r.StaticCodec.MarshalReqBody(ctx)
+}
+
+func (r *Rank) UnmarshalResp(ctx context.Context, data []byte) error {
 	var err error
 	cursor := 0
-	l.Resp.Reserved0, err = ReadInt(data, &cursor, l.Resp.Reserved0)
+	r.Resp.Reserved0, err = ReadInt(data, &cursor, r.Resp.Reserved0)
 	if err != nil {
 		return err
 	}
-	l.Resp.Count, err = ReadInt(data, &cursor, l.Resp.Count)
+	r.Resp.Count, err = ReadInt(data, &cursor, r.Resp.Count)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		j, _ := json.MarshalIndent(l.Resp, "", "  ")
-		fmt.Println(string(j))
+		if r.Debug {
+			j, _ := json.MarshalIndent(r.Resp, "", "  ")
+			fmt.Println(string(j))
+		}
 	}()
-	for i := 0; i < int(l.Resp.Count); i++ {
+	for i := 0; i < int(r.Resp.Count); i++ {
 		item := ListRespItem{}
 		item.Market, err = ReadInt(data, &cursor, item.Market)
 		if err != nil {
@@ -198,22 +159,8 @@ func (l *List) UnmarshalResp(ctx context.Context, data []byte) error {
 			return err
 		}
 
-		l.Resp.List = append(l.Resp.List, item)
+		r.Resp.List = append(r.Resp.List, item)
 	}
 
 	return nil
-}
-
-func (l *List) MarshalReqBody(ctx context.Context) ([]byte, error) {
-	l.SetContentHex(ctx, "05000000000000000400")
-	optionData, err := l.StaticCodec.MarshalReqBody(ctx)
-	if err != nil {
-		return nil, err
-	}
-	buf := bytes.NewBuffer(optionData)
-	err = binary.Write(buf, binary.LittleEndian, l.Items)
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
 }

@@ -24,19 +24,32 @@ func main() {
 	}
 	fmt.Printf("connected\n")
 
-	data, err := cli.List([]ee.StockQuery{
-		{Market: tdx.MarketSh, Code: "600000"},
-		{Market: tdx.MarketSh, Code: "601198"},
-		{Market: tdx.MarketSz, Code: "000100"},
-		{Market: tdx.MarketSz, Code: "300059"},
-	})
-	if err != nil {
-		fmt.Printf("error:%s", err)
-		return
+	{
+		data, err := cli.List([]ee.StockQuery{
+			{Market: tdx.MarketSh, Code: "600000"},
+			{Market: tdx.MarketSh, Code: "601198"},
+			{Market: tdx.MarketSz, Code: "000100"},
+			{Market: tdx.MarketSz, Code: "300059"},
+		})
+		if err != nil {
+			fmt.Printf("error:%s", err)
+			return
+		}
+
+		j, _ := json.MarshalIndent(data, "", "  ")
+		fmt.Printf("%s\n", j)
 	}
 
-	j, _ := json.MarshalIndent(data, "", "  ")
-	fmt.Printf("%s\n", j)
+	{
+		data, err := cli.Rank("delta-desc-all")
+		if err != nil {
+			fmt.Printf("error:%s", err)
+			return
+		}
+
+		j, _ := json.MarshalIndent(data, "", "  ")
+		fmt.Printf("%s\n", j)
+	}
 
 	time.Sleep(60 * time.Second)
 }
