@@ -2,12 +2,29 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
+	"gotdx/models"
+	ee "gotdx/proto/v2"
 	"gotdx/tdx"
 )
 
 func main() {
+	var err error
+	cli := ee.NewClient(tdx.DefaultOption.
+		WithTCPAddress("110.41.147.114:7709").WithDebugMode().WithMsgCallback(func(pi models.ProcessInfo) {
+		fmt.Printf("%s\n", pi.Msg)
+	}))
+	err = cli.Connect()
+	if err != nil {
+		fmt.Printf("error:%s", err)
+		return
+	}
+	fmt.Printf("connected\n")
+}
+
+func main1() {
 	var err error
 
 	// ip地址如果失效，请自行替换

@@ -31,7 +31,7 @@ func defaultOptions() *Options {
 	}
 }
 
-func applyOptions(opts ...Option) *Options {
+func ApplyOptions(opts ...Option) *Options {
 	o := defaultOptions()
 	for _, opt := range opts {
 		opt(o)

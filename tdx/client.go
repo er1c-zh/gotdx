@@ -19,7 +19,7 @@ import (
 func New(opts ...Option) *Client {
 	client := &Client{}
 
-	client.opt = applyOptions(opts...)
+	client.opt = ApplyOptions(opts...)
 	client.sending = make(chan bool, 1)
 	client.complete = make(chan bool, 1)
 	client.done = make(chan struct{})

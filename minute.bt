@@ -21,7 +21,7 @@ struct stock_item {
     int16 r0;
     byte price_skip[8];
 };
-int16 r0;
-int16 count;
+//int16 r0;
+//int16 count;
 
-stock_item si1;
+//stock_item si1;
