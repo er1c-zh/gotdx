@@ -15,7 +15,7 @@ import (
 	"bytes"
 )
 
-func main() {
+func main3() {
 	var err error
 	cli := ee.NewClient(tdx.DefaultOption.
 		WithTCPAddress("110.41.147.114:7709").
@@ -61,12 +61,12 @@ func main() {
 			break
 		}
 	}
-
 }
 
-func main2() {
+func main() {
 	var err error
 	cli := ee.NewClient(tdx.DefaultOption.
+		WithDebugMode().
 		WithTCPAddress("110.41.147.114:7709").WithDebugMode().WithMsgCallback(func(pi models.ProcessInfo) {
 		fmt.Printf("%s\n", pi.Msg)
 	}))
@@ -76,6 +76,16 @@ func main2() {
 		return
 	}
 	fmt.Printf("connected\n")
+
+	if true {
+		serverInfo, err := cli.ServerInfo()
+		if err != nil {
+			fmt.Printf("error:%s", err)
+			return
+		}
+
+		fmt.Printf("%s\n", serverInfo.Resp.Name)
+	}
 
 	if false {
 		data, err := cli.List([]ee.StockQuery{
