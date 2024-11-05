@@ -9,6 +9,8 @@ import (
 	"gotdx/models"
 	ee "gotdx/proto/v2"
 	"gotdx/tdx"
+
+	"bytes"
 )
 
 func main() {
@@ -24,10 +26,10 @@ func main() {
 	}
 	fmt.Printf("connected\n")
 
-	{
+	if true {
 		data, err := cli.List([]ee.StockQuery{
-			{Market: tdx.MarketSh, Code: "600000"},
-			{Market: tdx.MarketSh, Code: "601198"},
+			{Market: tdx.MarketSh, Code: "603230"},
+			{Market: tdx.MarketSh, Code: "601216"},
 			{Market: tdx.MarketSz, Code: "000100"},
 			{Market: tdx.MarketSz, Code: "300059"},
 		})
@@ -36,19 +38,31 @@ func main() {
 			return
 		}
 
-		j, _ := json.MarshalIndent(data, "", "  ")
-		fmt.Printf("%s\n", j)
+		// j, _ := json.MarshalIndent(data, "", "  ")
+		// fmt.Printf("%s\n", j)
+		for _, obj := range data.List {
+			buf := bytes.NewBuffer(nil)
+			for _, b := range obj.Reserved3 {
+				buf.WriteString(fmt.Sprintf("%08b", b))
+			}
+			fmt.Printf("%s buf:%s\n", obj.Code, buf.String())
+		}
 	}
 
-	{
-		data, err := cli.Rank("delta-desc-all")
+	if true {
+		data, err := cli.Rank("region-desc-all")
 		if err != nil {
 			fmt.Printf("error:%s", err)
 			return
 		}
 
-		j, _ := json.MarshalIndent(data, "", "  ")
-		fmt.Printf("%s\n", j)
+		for _, obj := range data.List {
+			buf := bytes.NewBuffer(nil)
+			for _, b := range obj.Reserved3 {
+				buf.WriteString(fmt.Sprintf("%08b", b))
+			}
+			fmt.Printf("%s buf:%s\n", obj.Code, buf.String())
+		}
 	}
 
 	time.Sleep(60 * time.Second)

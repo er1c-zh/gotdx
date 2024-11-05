@@ -11,6 +11,7 @@ import (
 func (c *Client) List(stockList []StockQuery) (*ListResp, error) {
 	var err error
 	l := List{}
+	l.SetContentHex(c.ctx, "0500000000000000"+fmt.Sprintf("%02X", len(stockList))+"00")
 	l.ListReq.Items = make([]ListReqItem, 0, len(stockList))
 	for _, stock := range stockList {
 		reqItem := ListReqItem{
@@ -205,7 +206,6 @@ func (l *List) UnmarshalResp(ctx context.Context, data []byte) error {
 }
 
 func (l *List) MarshalReqBody(ctx context.Context) ([]byte, error) {
-	l.SetContentHex(ctx, "05000000000000000400")
 	optionData, err := l.StaticCodec.MarshalReqBody(ctx)
 	if err != nil {
 		return nil, err

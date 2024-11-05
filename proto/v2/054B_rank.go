@@ -15,6 +15,8 @@ func (c *Client) Rank(schemaKey string) (*ListResp, error) {
 		r.StaticCodec.SetContentHex(c.ctx, "06002e0000002a0001000500000001000000")
 	case "delta-desc-exclude-bj":
 		r.StaticCodec.SetContentHex(c.ctx, "06002e0000002a0000000500260001000000")
+	case "region-desc-all":
+		r.StaticCodec.SetContentHex(c.ctx, "0600000000002a0000000500040001000000")
 	default:
 		// all A share order by code asc
 		r.StaticCodec.SetContentHex(c.ctx, "0600000000002a0000000500000001000000")
