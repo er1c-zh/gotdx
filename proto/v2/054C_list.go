@@ -24,7 +24,7 @@ func (c *Client) List(stockList []StockQuery) (*ListResp, error) {
 
 		l.ListReq.Items = append(l.ListReq.Items, reqItem)
 	}
-	err = do(c, &l)
+	err = do(c, c.dataConn, &l)
 	if err != nil {
 		return nil, err
 	}

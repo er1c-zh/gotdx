@@ -2,38 +2,21 @@ package v2
 
 import (
 	"bytes"
-	"compress/zlib"
 	"context"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"gotdx/models"
 	"gotdx/tdx"
-	"io"
-	"math/rand/v2"
-	"net"
-	"sync"
-	"sync/atomic"
-	"time"
 )
 
 type Client struct {
 	ctx context.Context
 	opt *tdx.Options
 
-	done            chan struct{}
-	heartbeatTicker *time.Ticker
+	dataConn *connRuntime
 
-	seqID uint32
-
-	muConn sync.Mutex
-	// mu start
-	conn      net.Conn
-	connected bool
-	// mu end
-	sendCh            chan *reqPkg
-	muHandlerRedister sync.Mutex
-	handlerRegister   map[uint32]*reqPkg
+	metaConn *connRuntime
 }
 
 type reqPkg struct {
@@ -48,49 +31,16 @@ type respPkg struct {
 
 func NewClient(opt tdx.Option) *Client {
 	cli := &Client{
-		opt:             tdx.ApplyOptions(opt),
-		done:            make(chan struct{}),
-		sendCh:          make(chan *reqPkg),
-		handlerRegister: make(map[uint32]*reqPkg),
+		opt: tdx.ApplyOptions(opt),
 	}
-	cli.heartbeatTicker = time.NewTicker(cli.opt.HeartbeatInterval)
 	cli.init()
-	cli.opt.MsgCallback(models.ProcessInfo{Msg: "init success."})
+	cli.Log("init success.")
 	return cli
 }
 
 // private
 func (c *Client) init() error {
-	c.seqID = rand.Uint32()%100000 + 600000
-	// heartbeat ticker
-	go func() {
-		// TODO recover panic
-		for {
-			c.Log("heartbeat ticker")
-			select {
-			case <-c.heartbeatTicker.C:
-				c.Log("heartbeat %t", c.connected)
-				if !c.connected {
-					continue
-				}
-				t0 := time.Now()
-				err := c.Heartbeat()
-				if err != nil {
-					c.resetConn()
-					c.Log("heartbeat fail: %v", err)
-				} else {
-					c.Log("heartbeat success, cost: %d ms", time.Since(t0).Milliseconds())
-				}
-			case <-c.done:
-				return
-			}
-		}
-	}()
 	return nil
-}
-
-func (c *Client) genSeqID() uint32 {
-	return atomic.AddUint32(&c.seqID, 1)
 }
 
 func (c *Client) Log(msg string, args ...any) {
@@ -98,15 +48,18 @@ func (c *Client) Log(msg string, args ...any) {
 }
 
 // use generic type
-func do[T Codec](c *Client, api T) error {
+func do[T Codec](c *Client, conn *connRuntime, api T) error {
 	if c == nil {
 		return fmt.Errorf("client is nil")
+	}
+	if conn == nil {
+		return fmt.Errorf("conn is nil or not connected")
 	}
 	c.Log("start do")
 	var err error
 	reqHeader := ReqHeader{
 		Zip:        0x0C,
-		SeqID:      c.genSeqID(),
+		SeqID:      conn.genSeqID(),
 		PacketType: 0x01,
 		PkgLen1:    0,
 		PkgLen2:    0,
@@ -139,7 +92,7 @@ func do[T Codec](c *Client, api T) error {
 	}
 
 	callback := make(chan *respPkg)
-	c.sendCh <- &reqPkg{header: reqHeader, body: reqBuf.Bytes(), callback: callback}
+	conn.sendCh <- &reqPkg{header: reqHeader, body: reqBuf.Bytes(), callback: callback}
 	// wait resp
 	respPkg := <-callback
 
@@ -156,106 +109,19 @@ func do[T Codec](c *Client, api T) error {
 
 // public
 func (c *Client) Connect() error {
-	c.muConn.Lock()
-	defer c.muConn.Unlock()
-
-	conn, err := net.Dial("tcp", c.opt.TCPAddress)
-	if err != nil {
-		return err
+	if c.dataConn != nil && c.dataConn.isConnected() {
+		return nil
 	}
-	c.conn = conn
-
-	go func() {
-		for {
-			c.opt.MsgCallback(models.ProcessInfo{Msg: "send start."})
-			d := <-c.sendCh
-			if d == nil {
-				continue
-			}
-			c.Log("send: %s %d", d.header.Method, d.header.SeqID)
-			c.muHandlerRedister.Lock()
-			c.handlerRegister[d.header.SeqID] = d
-			c.muHandlerRedister.Unlock()
-			n, err := c.conn.Write(d.body)
-			if err != nil {
-				c.Log("write fail: %s", err.Error())
-				break
-			}
-			c.Log("send: %d, size: %d", d.header.SeqID, n)
-		}
-		c.resetConn()
-	}()
-
-	go func() {
-		for {
-			var err error
-			c.Log("read start.")
-
-			// read header
-			headerBuf := make([]byte, 16)
-			_, err = io.ReadFull(c.conn, headerBuf)
-			if err != nil {
-				c.Log("read header fail: %v", err)
-				break
-			}
-			var header RespHeader
-			if err := binary.Read(bytes.NewBuffer(headerBuf), binary.LittleEndian, &header); err != nil {
-				c.Log("parse header fail: %v", err)
-				break
-			}
-
-			c.Log("read: %d, size: %d", header.SeqID, header.PkgDataSize)
-
-			body := make([]byte, header.PkgDataSize)
-			_, err = io.ReadFull(c.conn, body)
-			if err != nil {
-				c.Log("read body fail: %v", err)
-				break
-			}
-			if header.PkgDataSize != header.RawDataSize {
-				r, _ := zlib.NewReader(bytes.NewReader(body))
-				body, err = io.ReadAll(r)
-				if err != nil {
-					c.Log("unzip fail: %v", err)
-					continue
-				}
-			}
-			// dispatch
-			c.muHandlerRedister.Lock()
-			reqPkg, ok := c.handlerRegister[header.SeqID]
-			if !ok {
-				c.muHandlerRedister.Unlock()
-				c.Log("handler not found: %s %d", header.Method, header.SeqID)
-				continue
-			}
-			delete(c.handlerRegister, header.SeqID)
-			c.muHandlerRedister.Unlock()
-			if reqPkg == nil || reqPkg.callback == nil {
-				c.Log("callback is nil: %s %d", header.Method, header.SeqID)
-				continue
-			}
-			c.Log("call callback: %s %d", header.Method, header.SeqID)
-			reqPkg.callback <- &respPkg{header: header, body: body}
-		}
-		c.resetConn()
-	}()
-	err = c.Heartbeat()
-	if err != nil {
-		return err
+	if c.dataConn == nil {
+		c.dataConn = newConnRuntime(c.ctx, connRuntimeOpt{
+			heartbeatInterval: c.opt.HeartbeatInterval,
+			log:               c.Log,
+			heartbeatFunc: func() error {
+				return c.Heartbeat()
+			},
+		})
 	}
-	c.Log("set connected")
-	c.connected = true
-	return nil
-}
-
-func (c *Client) resetConn() {
-	c.Log("reset conn")
-	c.muConn.Lock()
-	defer c.muConn.Unlock()
-	if c.conn != nil {
-		_ = c.conn.Close()
-	}
-	c.connected = false
+	return c.dataConn.connect(c.opt.TCPAddress)
 }
 
 func (c *Client) Disconnect() error {
@@ -264,7 +130,7 @@ func (c *Client) Disconnect() error {
 
 func (c *Client) Handshake() error {
 	handshake := &Handshake{}
-	err := do(c, handshake)
+	err := do(c, c.dataConn, handshake)
 	if err != nil {
 		return err
 	}
@@ -274,7 +140,7 @@ func (c *Client) Handshake() error {
 func (c *Client) Heartbeat() error {
 	c.Log("call heartbeat")
 	heartbeat := &Heartbeat{}
-	err := do(c, heartbeat)
+	err := do(c, c.dataConn, heartbeat)
 	if err != nil {
 		return err
 	}

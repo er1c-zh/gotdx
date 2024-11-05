@@ -24,7 +24,7 @@ func (c *Client) Rank(schemaKey string) (*ListResp, error) {
 
 	// r.SetDebug(c.ctx)
 
-	err = do(c, &r)
+	err = do(c, c.dataConn, &r)
 	if err != nil {
 		return nil, err
 	}
