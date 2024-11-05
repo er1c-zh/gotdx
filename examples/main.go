@@ -34,18 +34,49 @@ func testDownloadFile() {
 		return
 	}
 	fmt.Printf("connected\n")
-	data, err := cli.DownloadFile("zhb.zip")
-	if err != nil {
-		fmt.Printf("error:%s", err)
-		return
+
+	/*
+		"block_gn.dat"
+		"block_fg.dat"
+		"block_zs.dat"
+		"tdxhy.cfg"
+		"spec/speckzzdata.txt"
+		"spec/specetfdata.txt"
+		"spec/speclofdata.txt"
+		"spec/specgpext.txt"
+		"tdxzsbase.cfg"
+		"zhb.zip"
+	*/
+
+	for _, fileName := range []string{
+		"infoharbor_ex.code",
+		// "block_gn.dat",
+		// "block_fg.dat",
+		// "block_zs.dat",
+		// "tdxhy.cfg",
+		// "spec/speckzzdata.txt",
+		// "spec/specetfdata.txt",
+		// "spec/speclofdata.txt",
+		// "spec/specgpext.txt",
+		// "tdxzsbase.cfg",
+		// "zhb.zip",
+	} {
+
+		data, err := cli.DownloadFile(fileName)
+		if err != nil {
+			fmt.Printf("error:%s", err)
+			return
+		}
+
+		f, err := os.OpenFile("test_data/"+fileName, os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			f.Close()
+			continue
+		}
+		f.Write(data)
+		f.Close()
 	}
 
-	f, err := os.OpenFile("test_data/zhb.zip", os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return
-	}
-	defer f.Close()
-	f.Write(data)
 }
 
 func main3() {
