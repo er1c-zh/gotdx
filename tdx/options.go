@@ -9,6 +9,7 @@ const (
 	_defaultTCPAddress        = "119.147.212.81:7709"
 	_defaultRetryTimes        = 3
 	_defaultHeartbeatInterval = 15 * time.Second
+	_defaultMetaAddress       = "124.71.223.19:7727"
 )
 
 type Options struct {
@@ -18,6 +19,7 @@ type Options struct {
 	HeartbeatInterval time.Duration
 	MsgCallback       func(models.ProcessInfo)
 	Debug             bool
+	MetaAddress       string // meta 数据服务器
 }
 
 func defaultOptions() *Options {
@@ -28,6 +30,8 @@ func defaultOptions() *Options {
 		MsgCallback: func(pi models.ProcessInfo) {
 			// do nothing
 		},
+		Debug:       false,
+		MetaAddress: _defaultMetaAddress,
 	}
 }
 
@@ -74,6 +78,13 @@ func (Option Option) WithMsgCallback(callback func(models.ProcessInfo)) Option {
 func (Option Option) WithDebugMode() Option {
 	return func(o *Options) {
 		o.Debug = true
+		Option(o)
+	}
+}
+
+func (Option Option) WithMetaAddress(metaAddress string) Option {
+	return func(o *Options) {
+		o.MetaAddress = metaAddress
 		Option(o)
 	}
 }

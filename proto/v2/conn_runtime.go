@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-type connRuntime struct {
+type ConnRuntime struct {
 	ctx context.Context
 
 	seqID uint32
@@ -38,8 +38,8 @@ type connRuntimeOpt struct {
 	log               func(format string, args ...any)
 }
 
-func newConnRuntime(ctx context.Context, opt connRuntimeOpt) *connRuntime {
-	r := &connRuntime{
+func newConnRuntime(ctx context.Context, opt connRuntimeOpt) *ConnRuntime {
+	r := &ConnRuntime{
 		log: func(format string, args ...any) {
 			// do nothing
 		},
@@ -54,7 +54,7 @@ func newConnRuntime(ctx context.Context, opt connRuntimeOpt) *connRuntime {
 	}
 	r.done = make(chan struct{})
 	r.connected = false
-	r.sendCh = make(chan *reqPkg, 0)
+	r.sendCh = make(chan *reqPkg)
 	r.handlerRegister = make(map[uint32]*reqPkg)
 
 	go r.heartbeatTrigger()
@@ -62,7 +62,7 @@ func newConnRuntime(ctx context.Context, opt connRuntimeOpt) *connRuntime {
 	return r
 }
 
-func (r *connRuntime) heartbeatTrigger() {
+func (r *ConnRuntime) heartbeatTrigger() {
 	// TODO recover panic
 	for {
 		r.log("heartbeat ticker")
@@ -86,7 +86,7 @@ func (r *connRuntime) heartbeatTrigger() {
 	}
 }
 
-func (r *connRuntime) connect(addr string) error {
+func (r *ConnRuntime) connect(addr string) error {
 	r.muConn.Lock()
 	defer r.muConn.Unlock()
 	var err error
@@ -108,7 +108,7 @@ func (r *connRuntime) connect(addr string) error {
 	return nil
 }
 
-func (r *connRuntime) sendHandler() {
+func (r *ConnRuntime) sendHandler() {
 	r.log("send handler start")
 	for {
 		d := <-r.sendCh
@@ -129,7 +129,7 @@ func (r *connRuntime) sendHandler() {
 	r.resetConn()
 }
 
-func (r *connRuntime) recvHandler() {
+func (r *ConnRuntime) recvHandler() {
 	// todo
 	r.log("read start.")
 	for {
@@ -190,7 +190,7 @@ func (r *connRuntime) recvHandler() {
 	r.resetConn()
 }
 
-func (r *connRuntime) resetConn() {
+func (r *ConnRuntime) resetConn() {
 	r.log("reset conn")
 	r.muConn.Lock()
 	defer r.muConn.Unlock()
@@ -200,10 +200,10 @@ func (r *connRuntime) resetConn() {
 	r.connected = false
 }
 
-func (r *connRuntime) genSeqID() uint32 {
+func (r *ConnRuntime) genSeqID() uint32 {
 	return atomic.AddUint32(&r.seqID, 1)
 }
 
-func (r *connRuntime) isConnected() bool {
+func (r *ConnRuntime) isConnected() bool {
 	return r.connected
 }

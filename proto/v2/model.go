@@ -13,12 +13,12 @@ func (c ApiCode) String() string {
 }
 
 type ReqHeader struct {
-	Zip        uint8  // ZipFlag
-	SeqID      uint32 // 请求编号
-	PacketType uint8
-	PkgLen1    uint16
-	PkgLen2    uint16
-	Method     ApiCode // method 请求方法
+	MagicNumber uint8  // MagicNumber
+	SeqID       uint32 // 请求编号
+	PacketType  uint8
+	PkgLen1     uint16
+	PkgLen2     uint16
+	Method      ApiCode // method 请求方法
 }
 
 type RespHeader struct {

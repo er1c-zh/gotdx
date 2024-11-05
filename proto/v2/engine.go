@@ -14,9 +14,7 @@ type Client struct {
 	ctx context.Context
 	opt *tdx.Options
 
-	dataConn *connRuntime
-
-	metaConn *connRuntime
+	dataConn *ConnRuntime
 }
 
 type reqPkg struct {
@@ -48,7 +46,7 @@ func (c *Client) Log(msg string, args ...any) {
 }
 
 // use generic type
-func do[T Codec](c *Client, conn *connRuntime, api T) error {
+func do[T Codec](c *Client, conn *ConnRuntime, api T) error {
 	if c == nil {
 		return fmt.Errorf("client is nil")
 	}
@@ -58,12 +56,12 @@ func do[T Codec](c *Client, conn *connRuntime, api T) error {
 	c.Log("start do")
 	var err error
 	reqHeader := ReqHeader{
-		Zip:        0x0C,
-		SeqID:      conn.genSeqID(),
-		PacketType: 0x01,
-		PkgLen1:    0,
-		PkgLen2:    0,
-		Method:     0,
+		MagicNumber: 0x0C,
+		SeqID:       conn.genSeqID(),
+		PacketType:  0x01,
+		PkgLen1:     0,
+		PkgLen2:     0,
+		Method:      0,
 	}
 	err = api.FillReqHeader(c.ctx, &reqHeader)
 	if err != nil {
@@ -122,6 +120,19 @@ func (c *Client) Connect() error {
 		})
 	}
 	return c.dataConn.connect(c.opt.TCPAddress)
+}
+
+func (c *Client) NewMetaConnection() (*ConnRuntime, error) {
+	conn := newConnRuntime(c.ctx, connRuntimeOpt{
+		heartbeatInterval: c.opt.HeartbeatInterval,
+		log:               c.Log,
+		heartbeatFunc:     func() error { return nil },
+	})
+	err := conn.connect(c.opt.MetaAddress)
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
 }
 
 func (c *Client) Disconnect() error {
