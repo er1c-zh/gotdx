@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -37,7 +38,7 @@ func main() {
 
 	offset := uint32(0)
 
-	f, err := os.OpenFile("descmap.txt", os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile("test_data/descmap.txt", os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return
 	}
@@ -53,7 +54,7 @@ func main() {
 		offset += uint32(descMapResp.Count)
 		for _, d := range descMapResp.List {
 			fmt.Printf("%s %s\n", d.IDInUtf8, d.DescInUtf8)
-			buf.WriteString(fmt.Sprintf("%s %s\n", d.IDInUtf8, d.DescInUtf8))
+			buf.WriteString(fmt.Sprintf("%s %s %s\n", hex.EncodeToString(d.Reserved0), d.IDInUtf8, d.DescInUtf8))
 		}
 		f.Write(buf.Bytes())
 		if descMapResp.Count < 500 {

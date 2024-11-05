@@ -100,12 +100,12 @@ func (m *MetaDescMap) UnmarshalResp(ctx context.Context, data []byte) error {
 			return err
 		}
 
-		item.IDInUtf8 = strings.TrimSuffix(string(item.ID), "\x00")
+		item.IDInUtf8 = strings.TrimRight(string(item.ID), "\x00")
 		descUtf8WithSpaceSuffix, err := gbkDecoder.Bytes(item.Desc)
 		if err != nil {
 			item.DescInUtf8 = "parse_fail"
 		} else {
-			item.DescInUtf8 = strings.TrimSuffix(string(descUtf8WithSpaceSuffix), "\x00")
+			item.DescInUtf8 = strings.TrimRight(string(descUtf8WithSpaceSuffix), "\x00")
 		}
 		resp.List = append(resp.List, item)
 	}
