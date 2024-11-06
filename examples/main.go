@@ -16,7 +16,8 @@ import (
 )
 
 func main() {
-	testStockMeta()
+	// testStockMeta()
+	testServerInfo()
 }
 
 func testStockMeta() {
@@ -143,8 +144,8 @@ func main3() {
 		buf := bytes.NewBuffer(nil)
 		offset += uint32(descMapResp.Count)
 		for _, d := range descMapResp.List {
-			fmt.Printf("%s %s\n", d.IDInUtf8, d.DescInUtf8)
-			buf.WriteString(fmt.Sprintf("%s %s %s\n", hex.EncodeToString(d.Reserved0), d.IDInUtf8, d.DescInUtf8))
+			fmt.Printf("%s %s\n", d.ID, d.Desc)
+			buf.WriteString(fmt.Sprintf("%s %s %s\n", hex.EncodeToString(d.Reserved0), d.ID, d.Desc))
 		}
 		f.Write(buf.Bytes())
 		if descMapResp.Count < 500 {
@@ -153,7 +154,7 @@ func main3() {
 	}
 }
 
-func testStockData() {
+func testServerInfo() {
 	var err error
 	cli := ee.NewClient(tdx.DefaultOption.
 		WithDebugMode().
@@ -219,7 +220,7 @@ func testStockData() {
 	time.Sleep(60 * time.Second)
 }
 
-func main1() {
+func testOld() {
 	var err error
 
 	// ip地址如果失效，请自行替换

@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
-	"strings"
-
-	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
 type MetaDescMap struct {
@@ -28,12 +25,9 @@ type MetaDescMapResp struct {
 
 type MetaDesc struct {
 	Reserved0 []byte // 5
-	ID        []byte // 9 ascii
-	Desc      []byte // 28 gbk
+	ID        string // 9 ascii
+	Desc      string // 28 gbk
 	Reserved1 []byte // 22
-
-	IDInUtf8   string
-	DescInUtf8 string
 }
 
 func (c *Client) MetaDescMap(conn *ConnRuntime, offset uint32) (*MetaDescMapResp, error) {
@@ -80,18 +74,17 @@ func (m *MetaDescMap) UnmarshalResp(ctx context.Context, data []byte) error {
 		return err
 	}
 
-	gbkDecoder := simplifiedchinese.GBK.NewDecoder()
 	for i := 0; i < int(resp.Count); i += 1 {
 		item := MetaDesc{}
 		item.Reserved0, err = ReadByteArray(data, &cursor, 5)
 		if err != nil {
 			return err
 		}
-		item.ID, err = ReadByteArray(data, &cursor, 9)
+		item.ID, err = ReadTDXString(data, &cursor, 9)
 		if err != nil {
 			return err
 		}
-		item.Desc, err = ReadByteArray(data, &cursor, 28)
+		item.Desc, err = ReadTDXString(data, &cursor, 28)
 		if err != nil {
 			return err
 		}
@@ -100,13 +93,6 @@ func (m *MetaDescMap) UnmarshalResp(ctx context.Context, data []byte) error {
 			return err
 		}
 
-		item.IDInUtf8 = strings.TrimRight(string(item.ID), "\x00")
-		descUtf8WithSpaceSuffix, err := gbkDecoder.Bytes(item.Desc)
-		if err != nil {
-			item.DescInUtf8 = "parse_fail"
-		} else {
-			item.DescInUtf8 = strings.TrimRight(string(descUtf8WithSpaceSuffix), "\x00")
-		}
 		resp.List = append(resp.List, item)
 	}
 

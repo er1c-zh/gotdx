@@ -1,10 +1,7 @@
 package v2
 
 import (
-	"bytes"
 	"context"
-
-	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
 type ServerInfo struct {
@@ -40,16 +37,11 @@ func (s *ServerInfo) MarshalReqBody(ctx context.Context) ([]byte, error) {
 }
 
 func (s *ServerInfo) UnmarshalResp(ctx context.Context, data []byte) error {
+	var err error
 	cursor := 68
-	buf := bytes.NewBuffer(nil)
-	for cursor < len(data) && data[cursor] != '\000' {
-		buf.WriteByte(data[cursor])
-		cursor += 1
-	}
-	utf8Buf, err := simplifiedchinese.GBK.NewDecoder().Bytes(buf.Bytes())
+	s.Resp.Name, err = ReadTDXString(data, &cursor, 80)
 	if err != nil {
 		return err
 	}
-	s.Resp.Name = string(utf8Buf)
 	return nil
 }

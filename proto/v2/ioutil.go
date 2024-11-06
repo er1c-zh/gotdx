@@ -149,7 +149,7 @@ func ReadByteArray(b []byte, cursor *int, length int) ([]byte, error) {
 }
 
 func ReadTDXString(b []byte, cursor *int, fixedLength int) (string, error) {
-	nameGBKBuf, err := ReadByteArray(b, cursor, 8)
+	nameGBKBuf, err := ReadByteArray(b, cursor, fixedLength)
 	if err != nil {
 		return "", err
 	}
