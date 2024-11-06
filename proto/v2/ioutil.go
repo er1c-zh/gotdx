@@ -6,6 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strings"
+
+	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
 func GenerateCodeBytesArray(s string) ([6]byte, error) {
@@ -143,4 +146,16 @@ func ReadByteArray(b []byte, cursor *int, length int) ([]byte, error) {
 		*cursor += length
 	}()
 	return b[*cursor : *cursor+length], nil
+}
+
+func ReadTDXString(b []byte, cursor *int, fixedLength int) (string, error) {
+	nameGBKBuf, err := ReadByteArray(b, cursor, 8)
+	if err != nil {
+		return "", err
+	}
+	nameUtf8Buf, err := simplifiedchinese.GBK.NewDecoder().Bytes(nameGBKBuf)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimRight(string(nameUtf8Buf), "\x00"), nil
 }
