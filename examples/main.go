@@ -17,7 +17,8 @@ import (
 
 func main() {
 	// testStockMeta()
-	testServerInfo()
+	// testServerInfo()
+	testDownloadFile()
 }
 
 func testStockMeta() {
@@ -75,6 +76,7 @@ func testDownloadFile() {
 	*/
 
 	for _, fileName := range []string{
+		// "infoharbor_block.dat",
 		// "infoharbor_ex.code",
 		// "infoharbor_ex.name",
 		// "block_gn.dat",
@@ -85,7 +87,10 @@ func testDownloadFile() {
 		// "spec/specetfdata.txt",
 		// "spec/speclofdata.txt",
 		// "spec/specgpext.txt",
+		// "spec/speczsevent.txt",
+		// "spec/speczshot.txt",
 		// "tdxzsbase.cfg",
+		"tdxzsbase2.cfg",
 		// "zhb.zip",
 	} {
 
@@ -95,7 +100,7 @@ func testDownloadFile() {
 			return
 		}
 
-		f, err := os.OpenFile("test_data/"+fileName, os.O_CREATE|os.O_WRONLY, 0644)
+		f, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			f.Close()
 			continue
