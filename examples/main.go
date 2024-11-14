@@ -18,7 +18,34 @@ import (
 func main() {
 	// testStockMeta()
 	// testServerInfo()
-	testDownloadFile()
+	// testDownloadFile()
+	test0547()
+}
+
+func test0547() {
+	var err error
+	cli := ee.NewClient(tdx.DefaultOption.
+		WithDebugMode().
+		WithTCPAddress("110.41.147.114:7709").
+		WithDebugMode().
+		WithMsgCallback(func(pi models.ProcessInfo) {
+			fmt.Printf("%s\n", pi.Msg)
+		}).WithMetaAddress("124.71.223.19:7727"))
+	err = cli.Connect()
+	if err != nil {
+		fmt.Printf("error:%s", err)
+		return
+	}
+	fmt.Printf("connected\n")
+
+	err = cli.Realtime([]ee.StockQuery{
+		{Market: tdx.MarketSz, Code: "000040"},
+		{Market: tdx.MarketSz, Code: "000656"},
+	})
+	if err != nil {
+		fmt.Printf("error:%s", err)
+		return
+	}
 }
 
 func testStockMeta() {
