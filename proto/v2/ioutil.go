@@ -247,6 +247,7 @@ func NewTDXCodec() (*tdxCodec, error) {
 		cursor += 1
 	}
 
+	cursor = 0
 	var b0 uint32 = 0
 	var b1 uint32 = 0
 	for i := 0; i < 9; i += 1 {
@@ -258,7 +259,16 @@ func NewTDXCodec() (*tdxCodec, error) {
 		cursor += 2
 	}
 
-	// TODO
+	for i := 0; i < 4; i++ {
+		for j := 0; j < 128; j++ {
+			b0, b1, err = e.shift(b0, b1)
+			if err != nil {
+				return nil, err
+			}
+			e.book[cursor], e.book[cursor+1] = b0, b1
+			cursor += 2
+		}
+	}
 
 	return e, nil
 }
