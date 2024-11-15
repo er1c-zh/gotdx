@@ -213,6 +213,39 @@ func (c *tdxCodec) dumpBook() string {
 	return hex.Dump(b.Bytes())
 }
 
+func (c *tdxCodec) Encode(src []byte) ([]byte, error) {
+	var err error
+	if len(src)%8 != 0 {
+		return src, nil
+	}
+	dest := bytes.NewBuffer(nil)
+	cursor := 0
+	for cursor < len(src) {
+		b0 := readLittleEndianUint32([4]byte{src[cursor], src[cursor+1], src[cursor+2], src[cursor+3]})
+		b1 := readLittleEndianUint32([4]byte{src[cursor+4], src[cursor+5], src[cursor+6], src[cursor+7]})
+		b0, b1, err = c.shift(b0, b1)
+		if err != nil {
+			return nil, err
+		}
+		dest.Write(writeLittleEndianUint32(b0))
+		dest.Write(writeLittleEndianUint32(b1))
+		cursor += 8
+	}
+	return dest.Bytes(), nil
+}
+
+func readLittleEndianUint32(b [4]byte) uint32 {
+	return uint32(b[0]) | uint32(b[1])<<8 | uint32(b[2])<<16 | uint32(b[3])<<24
+}
+func writeLittleEndianUint32(v uint32) []byte {
+	b := make([]byte, 4)
+	b[0] = byte(v)
+	b[1] = byte(v >> 8)
+	b[2] = byte(v >> 16)
+	b[3] = byte(v >> 24)
+	return b
+}
+
 func NewTDXCodec() (*tdxCodec, error) {
 	var err error
 	e := &tdxCodec{}

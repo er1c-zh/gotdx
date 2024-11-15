@@ -19,7 +19,8 @@ func main() {
 	// testStockMeta()
 	// testServerInfo()
 	// testDownloadFile()
-	test0547()
+	// test0547()
+	testServerInfo()
 }
 
 func test0547() {
@@ -201,6 +202,15 @@ func testServerInfo() {
 	fmt.Printf("connected\n")
 
 	if true {
+		resp, err := cli.TDXHandshake()
+		if err != nil {
+			fmt.Printf("error:%s", err)
+			return
+		}
+		fmt.Printf("%s\n", resp)
+	}
+
+	if false {
 		serverInfo, err := cli.ServerInfo()
 		if err != nil {
 			fmt.Printf("error:%s", err)

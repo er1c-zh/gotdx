@@ -37,10 +37,12 @@ type Codec interface {
 	MarshalReqBody(ctx context.Context) ([]byte, error)
 	UnmarshalResp(ctx context.Context, data []byte) error
 	IsDebug(ctx context.Context) bool
+	NeedEncrypt(ctx context.Context) bool
 }
 
 type BlankCodec struct {
-	Debug bool
+	Debug   bool
+	Encrypt bool
 }
 
 func (BlankCodec) MarshalReqBody(context.Context) ([]byte, error) {
@@ -61,6 +63,14 @@ func (c *BlankCodec) IsDebug(ctx context.Context) bool {
 
 func (c *BlankCodec) SetDebug(ctx context.Context) {
 	c.Debug = true
+}
+
+func (c *BlankCodec) NeedEncrypt(ctx context.Context) bool {
+	return false
+}
+
+func (c *BlankCodec) SetNeedEncrypt(context.Context, string) {
+	c.Encrypt = true
 }
 
 type StaticCodec struct {

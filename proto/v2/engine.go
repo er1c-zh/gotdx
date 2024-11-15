@@ -14,6 +14,8 @@ type Client struct {
 	ctx context.Context
 	opt *tdx.Options
 
+	codec *tdxCodec
+
 	dataConn *ConnRuntime
 }
 
@@ -38,6 +40,11 @@ func NewClient(opt tdx.Option) *Client {
 
 // private
 func (c *Client) init() error {
+	var err error
+	c.codec, err = NewTDXCodec()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -73,6 +80,13 @@ func do[T Codec](c *Client, conn *ConnRuntime, api T) error {
 	}
 	reqHeader.PkgLen1 = 2 + uint16(len(reqData))
 	reqHeader.PkgLen2 = 2 + uint16(len(reqData))
+
+	if api.NeedEncrypt(c.ctx) {
+		reqData, err = c.codec.Encode(reqData)
+		if err != nil {
+			return err
+		}
+	}
 
 	// send req
 	reqBuf := bytes.NewBuffer(nil)
