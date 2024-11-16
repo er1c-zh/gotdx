@@ -9,7 +9,7 @@ import (
 type ApiCode uint16
 
 func (c ApiCode) String() string {
-	return fmt.Sprintf("%02X", uint16(c))
+	return fmt.Sprintf("%04X", uint16(c))
 }
 
 type ReqHeader struct {
@@ -23,7 +23,7 @@ type ReqHeader struct {
 
 type RespHeader struct {
 	I1     uint32
-	I2     uint8
+	Flag   uint8
 	SeqID  uint32 // 请求编号
 	I3     uint8
 	Method ApiCode // method

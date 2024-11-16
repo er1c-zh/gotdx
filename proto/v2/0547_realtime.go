@@ -6,46 +6,47 @@ import (
 	"encoding/binary"
 )
 
-func (c *Client) Realtime(stock []StockQuery) error {
+func (c *Client) Realtime(stock []StockQuery) (*RealtimeResp, error) {
 	realtime := &Realtime{}
 
 	realtime.SetDebug(c.ctx)
 
 	realtime.Req = &RealtimeReq{
-		R0: 7,
-		R1: 0,
+		Size: uint16(len(stock)),
 	}
 	for _, s := range stock {
 		realtime.Req.ItemList = append(realtime.Req.ItemList, RealtimeReqItem{
 			Market: s.Market,
-			Code:   [6]byte{s.Code[0], s.Code[1], s.Code[2], s.Code[3], s.Code[4], s.Code[5]},
-			// R0:     [4]uint8{0xE2, 0x2B, 0x02, 0x00}, // 0xE22B0200
-			R0: [4]uint8{0x00, 0x00, 0x00, 0x00},
+			Code:   [10]byte{s.Code[0], s.Code[1], s.Code[2], s.Code[3], s.Code[4], s.Code[5]},
 		})
 	}
 
 	err := do(c, c.dataConn, realtime)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	return realtime.Resp, nil
 }
 
 type Realtime struct {
 	BlankCodec
-	Req *RealtimeReq
+	Req  *RealtimeReq
+	Resp *RealtimeResp
 }
 
 type RealtimeReq struct {
-	R0       uint8
-	R1       uint8
+	Size     uint16
 	ItemList []RealtimeReqItem
 }
 
 type RealtimeReqItem struct {
 	Market uint8
-	Code   [6]byte
-	R0     [4]uint8
+	Code   [10]byte
+}
+
+type RealtimeResp struct {
+	Data []byte
 }
 
 func (obj *Realtime) FillReqHeader(ctx context.Context, header *ReqHeader) error {
@@ -56,11 +57,7 @@ func (obj *Realtime) FillReqHeader(ctx context.Context, header *ReqHeader) error
 func (obj *Realtime) MarshalReqBody(ctx context.Context) ([]byte, error) {
 	var err error
 	buf := bytes.NewBuffer(nil)
-	err = binary.Write(buf, binary.LittleEndian, obj.Req.R0)
-	if err != nil {
-		return nil, err
-	}
-	err = binary.Write(buf, binary.LittleEndian, obj.Req.R1)
+	err = binary.Write(buf, binary.LittleEndian, obj.Req.Size)
 	if err != nil {
 		return nil, err
 	}
@@ -74,5 +71,9 @@ func (obj *Realtime) MarshalReqBody(ctx context.Context) ([]byte, error) {
 }
 
 func (obj *Realtime) UnmarshalResp(ctx context.Context, data []byte) error {
+	data = decryptSimpleXOR(data, 0x93)
+	obj.Resp = &RealtimeResp{
+		Data: data,
+	}
 	return nil
 }

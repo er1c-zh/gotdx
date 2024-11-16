@@ -68,6 +68,7 @@ func (h *Handshake) FillReqHeader(ctx context.Context, header *ReqHeader) error 
 }
 
 func (h *Handshake) UnmarshalResp(ctx context.Context, data []byte) error {
+	// seem useless for us
 	h.RespHex = hex.Dump(data)
 	return nil
 }

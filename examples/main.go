@@ -19,8 +19,8 @@ func main() {
 	// testStockMeta()
 	// testServerInfo()
 	// testDownloadFile()
-	// test0547()
-	testServerInfo()
+	test0547()
+	// testServerInfo()
 }
 
 func test0547() {
@@ -39,14 +39,20 @@ func test0547() {
 	}
 	fmt.Printf("connected\n")
 
-	err = cli.Realtime([]ee.StockQuery{
-		{Market: tdx.MarketSz, Code: "000040"},
-		{Market: tdx.MarketSz, Code: "000656"},
+	// cli.TDXHandshake()
+	// cli.Heartbeat()
+
+	resp, err := cli.Realtime([]ee.StockQuery{
+		{Market: tdx.MarketSz, Code: "399002"},
+		{Market: tdx.MarketSz, Code: "399002"},
+		{Market: tdx.MarketSh, Code: "999998"},
+		{Market: tdx.MarketSh, Code: "999997"},
 	})
 	if err != nil {
 		fmt.Printf("error:%s", err)
 		return
 	}
+	fmt.Printf("%s\n", hex.Dump(resp.Data))
 }
 
 func testStockMeta() {

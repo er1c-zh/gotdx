@@ -100,7 +100,8 @@ func do[T Codec](c *Client, conn *ConnRuntime, api T) error {
 	}
 
 	if c.opt.Debug && api.IsDebug(c.ctx) {
-		c.Log("send %s: %s", reqHeader.Method, hex.EncodeToString(reqBuf.Bytes()))
+		c.Log("send %s", reqHeader.Method)
+		c.Log("%s", hex.Dump(reqBuf.Bytes()))
 	}
 
 	callback := make(chan *respPkg)

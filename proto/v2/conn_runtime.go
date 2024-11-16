@@ -13,6 +13,10 @@ import (
 	"time"
 )
 
+const (
+	maskRecvHeaderZipFlag = 0x10
+)
+
 type ConnRuntime struct {
 	ctx context.Context
 
@@ -156,7 +160,7 @@ func (r *ConnRuntime) recvHandler() {
 			r.log("read body fail: %v", err)
 			break
 		}
-		if header.PkgDataSize != header.RawDataSize {
+		if header.Flag&maskRecvHeaderZipFlag > 0 {
 			zipReader, err := zlib.NewReader(bytes.NewReader(body))
 			if err != nil {
 				r.log("unzip fail: %v", err)
