@@ -56,25 +56,25 @@ type ListRespItem struct {
 	Market             uint8
 	Code               string
 	SplitFlag          uint16
-	CurPrice           int
-	YesterdayOpenDelta int
-	OpenDelta          int
-	HighDelta          int
-	LowDelta           int
-	Reserved0          int
-	NegativeCurPrice   int // ?
-	TotalVolume        int
-	CurrentVolume      int
+	CurPrice           int64
+	YesterdayOpenDelta int64
+	OpenDelta          int64
+	HighDelta          int64
+	LowDelta           int64
+	Reserved0          int64
+	NegativeCurPrice   int64 // ?
+	TotalVolume        int64
+	CurrentVolume      int64
 	TotalAmount        float64
-	SellVolume         int
-	BuyVolume          int
-	Reserved1          int
-	Reserved2          int
+	SellVolume         int64
+	BuyVolume          int64
+	Reserved1          int64
+	Reserved2          int64
 
-	BuyPriceDelta1  int
-	SellPriceDelta1 int
-	BuyVolume1      int
-	SellVolume1     int
+	BuyPriceDelta1  int64
+	SellPriceDelta1 int64
+	BuyVolume1      int64
+	SellVolume1     int64
 
 	Reserved3 []byte
 
@@ -136,7 +136,7 @@ func (l *List) UnmarshalResp(ctx context.Context, data []byte) error {
 		if err != nil {
 			return err
 		}
-		item.Reserved0, err = ReadTDXInt(data, &cursor)
+		_, err = ReadInt(data, &cursor, uint32(0))
 		if err != nil {
 			return err
 		}

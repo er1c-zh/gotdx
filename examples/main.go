@@ -43,8 +43,10 @@ func test0547() {
 	// cli.Heartbeat()
 
 	resp, err := cli.Realtime([]ee.StockQuery{
+		{Market: tdx.MarketSh, Code: "999999"},
 		{Market: tdx.MarketSz, Code: "399002"},
-		{Market: tdx.MarketSz, Code: "399002"},
+		{Market: tdx.MarketSz, Code: "300059"},
+		{Market: tdx.MarketSz, Code: "300010"},
 		{Market: tdx.MarketSh, Code: "999998"},
 		{Market: tdx.MarketSh, Code: "999997"},
 	})
@@ -53,6 +55,8 @@ func test0547() {
 		return
 	}
 	fmt.Printf("%s\n", hex.Dump(resp.Data))
+	j, _ := json.MarshalIndent(resp, "", "  ")
+	fmt.Printf("%s\n", j)
 }
 
 func testStockMeta() {
