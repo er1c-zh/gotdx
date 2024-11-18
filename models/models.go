@@ -1,10 +1,11 @@
 package models
 
-type ProcessInfoType string
+type ProcessInfoType uint8
 
 const (
-	ProcessInfoTypeMsg ProcessInfoType = "msg"
-	ProcessInfoTypeErr ProcessInfoType = "err"
+	ProcessInfoTypeDebug ProcessInfoType = 0
+	ProcessInfoTypeInfo  ProcessInfoType = 1
+	ProcessInfoTypeErr   ProcessInfoType = 2
 )
 
 type ProcessInfo struct {

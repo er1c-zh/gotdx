@@ -6,6 +6,7 @@ toolchain go1.23.2
 
 require (
 	github.com/er1c-zh/gotdx v0.0.0-20241030063233-6b50885923d4
+	github.com/mozillazg/go-slugify v0.2.0
 	github.com/wailsapp/wails/v2 v2.9.2
 	golang.org/x/text v0.18.0
 )
@@ -24,8 +25,6 @@ require (
 	github.com/leaanthony/u v1.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
-	github.com/mozillazg/go-pinyin v0.20.0 // indirect
-	github.com/mozillazg/go-slugify v0.2.0 // indirect
 	github.com/mozillazg/go-unidecode v0.2.0 // indirect
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

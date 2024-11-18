@@ -74,7 +74,6 @@ func (a *App) asyncInit() {
 			a.cli = v2.NewClient(tdx.DefaultOption.
 				WithDebugMode().
 				WithTCPAddress("110.41.147.114:7709").
-				WithDebugMode().
 				WithMsgCallback(a.EmitProcessInfo).
 				WithMetaAddress("124.71.223.19:7727"))
 			err = a.cli.Connect()
@@ -108,7 +107,6 @@ func (a *App) asyncInit() {
 			_, a.stockMeta, err = a.fm.LoadStockMeta()
 			if err != nil {
 				a.EmitProcessInfo(models.ProcessInfo{Msg: fmt.Sprintf("read stock meta failed: %s", err.Error())})
-				return
 			}
 			if a.stockMeta == nil {
 				a.EmitProcessInfo(models.ProcessInfo{Msg: "stock meta not found, loading from server..."})
@@ -129,8 +127,4 @@ func (a *App) asyncInit() {
 		a.initDone = true
 	})
 	runtime.EventsEmit(a.ctx, string(MsgKeyInit), a.initDone)
-}
-
-func (a *App) FetchStockMeta(code string) StockMeta {
-	panic("implement me!")
 }

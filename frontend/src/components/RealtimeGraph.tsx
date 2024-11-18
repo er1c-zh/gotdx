@@ -1,6 +1,5 @@
 import * as d3 from "d3";
 import { useEffect, useState } from "react";
-import { FetchRealtimeData } from "../../wailsjs/go/api/App";
 import { LogInfo } from "../../wailsjs/runtime/runtime";
 
 type RealtimeGraphProps = {
@@ -20,11 +19,7 @@ function RealtimeGraph(props: RealtimeGraphProps) {
   );
   const line = d3.line((d, i) => x(i), y);
 
-  useEffect(() => {
-    FetchRealtimeData(props.code).then((data) => {
-      setData(data.Data.map((d) => d.Price / 100.0));
-    });
-  }, [props.code]);
+  useEffect(() => {}, [props.code]);
 
   return (
     <div className="flex items-center p-4">

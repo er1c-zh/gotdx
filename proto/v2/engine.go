@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"gotdx/models"
 	"gotdx/tdx"
+	"time"
 )
 
 type Client struct {
@@ -49,7 +50,11 @@ func (c *Client) init() error {
 }
 
 func (c *Client) Log(msg string, args ...any) {
-	c.opt.MsgCallback(models.ProcessInfo{Msg: fmt.Sprintf(msg, args...)})
+	c.opt.MsgCallback(models.ProcessInfo{Type: models.ProcessInfoTypeInfo, Msg: fmt.Sprintf(msg, args...)})
+}
+
+func (c *Client) LogDebug(msg string, args ...any) {
+	c.opt.MsgCallback(models.ProcessInfo{Type: models.ProcessInfoTypeDebug, Msg: fmt.Sprintf(msg, args...)})
 }
 
 // use generic type
@@ -60,7 +65,7 @@ func do[T Codec](c *Client, conn *ConnRuntime, api T) error {
 	if conn == nil {
 		return fmt.Errorf("conn is nil or not connected")
 	}
-	c.Log("start do")
+	c.LogDebug("start do")
 	var err error
 	reqHeader := ReqHeader{
 		MagicNumber: 0x0C,
@@ -100,8 +105,8 @@ func do[T Codec](c *Client, conn *ConnRuntime, api T) error {
 	}
 
 	if c.opt.Debug && api.IsDebug(c.ctx) {
-		c.Log("send %s", reqHeader.Method)
-		c.Log("%s", hex.Dump(reqBuf.Bytes()))
+		c.LogDebug("send %s", reqHeader.Method)
+		c.LogDebug("%s", hex.Dump(reqBuf.Bytes()))
 	}
 
 	callback := make(chan *respPkg)
@@ -110,7 +115,7 @@ func do[T Codec](c *Client, conn *ConnRuntime, api T) error {
 	respPkg := <-callback
 
 	if c.opt.Debug && api.IsDebug(c.ctx) {
-		c.Log("recv %s: %s", respPkg.header.Method, hex.EncodeToString(respPkg.body))
+		c.LogDebug("recv %s: %s", respPkg.header.Method, hex.EncodeToString(respPkg.body))
 	}
 
 	err = api.UnmarshalResp(c.ctx, respPkg.body)
@@ -128,7 +133,7 @@ func (c *Client) Connect() error {
 	if c.dataConn == nil {
 		c.dataConn = newConnRuntime(c.ctx, connRuntimeOpt{
 			heartbeatInterval: c.opt.HeartbeatInterval,
-			log:               c.Log,
+			log:               c.LogDebug,
 			heartbeatFunc: func() error {
 				return c.Heartbeat()
 			},
@@ -164,11 +169,12 @@ func (c *Client) Handshake() error {
 }
 
 func (c *Client) Heartbeat() error {
-	c.Log("call heartbeat")
+	t0 := time.Now()
 	heartbeat := &Heartbeat{}
 	err := do(c, c.dataConn, heartbeat)
 	if err != nil {
 		return err
 	}
+	c.Log("heartbeat success, cost: %d ms", time.Since(t0).Milliseconds())
 	return nil
 }

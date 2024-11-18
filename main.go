@@ -18,7 +18,7 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "gotdx-ui",
+		Title:  "asNg",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{
@@ -32,6 +32,7 @@ func main() {
 		},
 		EnumBind: []interface{}{
 			api.ExportMsg,
+			api.ExportMarketType,
 		},
 	})
 

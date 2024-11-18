@@ -69,7 +69,7 @@ func newConnRuntime(ctx context.Context, opt connRuntimeOpt) *ConnRuntime {
 func (r *ConnRuntime) heartbeatTrigger() {
 	// TODO recover panic
 	for {
-		r.log("heartbeat ticker")
+		r.log("heartbeat ticker, seqID: %d", r.seqID)
 		select {
 		case <-r.heartbeatTicker.C:
 			r.log("heartbeat %t", r.connected)
