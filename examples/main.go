@@ -16,10 +16,10 @@ import (
 )
 
 func main() {
-	// testStockMeta()
+	testStockMeta()
 	// testServerInfo()
 	// testDownloadFile()
-	test0547()
+	// test0547()
 	// testServerInfo()
 }
 
@@ -75,7 +75,7 @@ func testStockMeta() {
 	}
 	fmt.Printf("connected\n")
 
-	resp, err := cli.StockMeta(tdx.MarketSh, 0)
+	resp, err := cli.StockMetaAll()
 	if err != nil {
 		fmt.Printf("error:%s", err)
 		return
@@ -128,8 +128,9 @@ func testDownloadFile() {
 		// "spec/speczsevent.txt",
 		// "spec/speczshot.txt",
 		// "tdxzsbase.cfg",
-		"tdxzsbase2.cfg",
+		// "tdxzsbase2.cfg",
 		// "zhb.zip",
+		"bigdata_0.zip",
 	} {
 
 		data, err := cli.DownloadFile(fileName)

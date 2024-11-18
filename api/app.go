@@ -2,9 +2,12 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"gotdx/models"
+	v2 "gotdx/proto/v2"
 	"gotdx/tdx"
 	"sync"
+	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -12,11 +15,16 @@ import (
 // App struct
 type App struct {
 	ctx context.Context
+	fm  *FileManager
 
-	// tdx
-	cli       *tdx.Client
-	once      sync.Once
-	indexInfo IndexInfo
+	initOnce sync.Once
+	initDone bool
+
+	// data in memory
+	stockMeta *models.StockMetaAll
+
+	// tdx v2
+	cli *v2.Client
 }
 
 // NewApp creates a new App application struct
@@ -40,28 +48,89 @@ func (a *App) EmitProcessInfo(i models.ProcessInfo) {
 	runtime.EventsEmit(a.ctx, string(MsgKeyProcessMsg), i)
 }
 
-func (a *App) Connect(host string) string {
-	if host == "" {
-		host = "124.71.187.122:7709"
-	}
-	if a.cli == nil {
-		a.cli = tdx.New(tdx.DefaultOption.WithTCPAddress(host).WithMsgCallback(a.EmitProcessInfo))
-	}
-	reply, err := a.cli.Connect()
-	if err != nil {
-		return err.Error()
-	}
-	runtime.EventsEmit(a.ctx, string(MsgKeyConnectionStatus), 1)
-	go a.InitBasicInfo()
-	return reply.Info
+const (
+	InitDone  = "done"
+	InitStart = "start"
+)
+
+func (a *App) Init() {
+	go a.asyncInit()
 }
 
-func (a *App) FetchStatus() IndexInfo {
-	a.InitBasicInfo()
-	return a.indexInfo
+func (a *App) asyncInit() {
+	a.initOnce.Do(func() {
+		var err error
+
+		a.EmitProcessInfo(models.ProcessInfo{Msg: "initializing..."})
+
+		a.fm, err = NewFileManager(a.ctx)
+		if err != nil {
+			a.EmitProcessInfo(models.ProcessInfo{Msg: fmt.Sprintf("file manager failed: %s", err.Error())})
+			return
+		}
+
+		{
+			a.EmitProcessInfo(models.ProcessInfo{Msg: "initializing client..."})
+			a.cli = v2.NewClient(tdx.DefaultOption.
+				WithDebugMode().
+				WithTCPAddress("110.41.147.114:7709").
+				WithDebugMode().
+				WithMsgCallback(a.EmitProcessInfo).
+				WithMetaAddress("124.71.223.19:7727"))
+			err = a.cli.Connect()
+			if err != nil {
+				a.EmitProcessInfo(models.ProcessInfo{Msg: fmt.Sprintf("connect client failed: %s", err.Error())})
+				return
+			}
+			t0 := time.Now()
+			_, err = a.cli.TDXHandshake()
+			if err != nil {
+				a.EmitProcessInfo(models.ProcessInfo{Msg: fmt.Sprintf("handshake failed: %s", err.Error())})
+				a.cli.Disconnect()
+				return
+			}
+			a.EmitProcessInfo(models.ProcessInfo{Msg: fmt.Sprintf("handshake cost: %d ms", time.Since(t0).Milliseconds())})
+			runtime.EventsEmit(a.ctx, string(MsgKeyConnectionStatus), 1)
+		}
+
+		{
+			a.EmitProcessInfo(models.ProcessInfo{Msg: "initializing file manager..."})
+			a.fm, err = NewFileManager(a.ctx)
+			if err != nil {
+				a.EmitProcessInfo(models.ProcessInfo{Msg: fmt.Sprintf("file manager failed: %s", err.Error())})
+				return
+			}
+		}
+
+		{
+			a.EmitProcessInfo(models.ProcessInfo{Msg: "loading stock meta..."})
+			t0 := time.Now()
+			_, a.stockMeta, err = a.fm.LoadStockMeta()
+			if err != nil {
+				a.EmitProcessInfo(models.ProcessInfo{Msg: fmt.Sprintf("read stock meta failed: %s", err.Error())})
+				return
+			}
+			if a.stockMeta == nil {
+				a.EmitProcessInfo(models.ProcessInfo{Msg: "stock meta not found, loading from server..."})
+				a.stockMeta, err = a.cli.StockMetaAll()
+				if err != nil {
+					a.EmitProcessInfo(models.ProcessInfo{Msg: fmt.Sprintf("read stock meta from server failed: %s", err.Error())})
+					return
+				}
+				a.EmitProcessInfo(models.ProcessInfo{Msg: "stock meta saving..."})
+				err = a.fm.SaveStockMeta(a.stockMeta)
+				if err != nil {
+					a.EmitProcessInfo(models.ProcessInfo{Msg: fmt.Sprintf("save stock meta failed: %s", err.Error())})
+					return
+				}
+			}
+			a.EmitProcessInfo(models.ProcessInfo{Msg: fmt.Sprintf("load stock meta cost: %d ms", time.Since(t0).Milliseconds())})
+		}
+		a.initDone = true
+	})
+	runtime.EventsEmit(a.ctx, string(MsgKeyInit), a.initDone)
 }
 
 func (a *App) FetchStockMeta(code string) StockMeta {
-	a.InitBasicInfo()
-	return a.indexInfo.StockMap[code]
+	panic("implement me!")
 }
