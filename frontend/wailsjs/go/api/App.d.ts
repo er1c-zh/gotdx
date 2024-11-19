@@ -3,6 +3,8 @@
 import {models} from '../models';
 import {api} from '../models';
 
+export function CommandMatch(arg1:string):Promise<Array<models.StockMetaItem>>;
+
 export function EmitProcessInfo(arg1:models.ProcessInfo):Promise<void>;
 
 export function Init():Promise<void>;

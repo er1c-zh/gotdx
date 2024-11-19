@@ -73,6 +73,24 @@ export namespace models {
 	        this.ServerInfo = source["ServerInfo"];
 	    }
 	}
+	export class StockMetaItem {
+	    Market: MarketType;
+	    Code: string;
+	    Desc: string;
+	    PinYinInitial: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new StockMetaItem(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Market = source["Market"];
+	        this.Code = source["Code"];
+	        this.Desc = source["Desc"];
+	        this.PinYinInitial = source["PinYinInitial"];
+	    }
+	}
 
 }
 

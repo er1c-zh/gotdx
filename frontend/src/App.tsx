@@ -31,7 +31,7 @@ function App() {
           {appState === 0 ? (
             <Portal connectDoneCallback={connectDone} />
           ) : (
-            <Viewer />
+            <Viewer Code={code} />
           )}
         </div>
       </div>
