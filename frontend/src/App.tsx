@@ -3,7 +3,6 @@ import "./App.css";
 import { api, models } from "../wailsjs/go/models";
 import { EventsEmit, EventsOn } from "../wailsjs/runtime";
 import CommandPanel from "./components/CommandPanel";
-import RealtimeGraph from "./components/RealtimeGraph";
 import Terminal from "./components/Terminal";
 import Portal from "./components/Portal";
 import Viewer from "./components/Viewer";
@@ -42,7 +41,11 @@ function App() {
           cmdPanelShow ? "" : "hidden"
         } w-screen fixed top-0 left-0`}
       >
-        <CommandPanel setIsShow={setCmdPanelShow} setCode={setCode} />
+        <CommandPanel
+          IsShow={cmdPanelShow}
+          setIsShow={setCmdPanelShow}
+          setCode={setCode}
+        />
       </div>
     </div>
   );
