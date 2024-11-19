@@ -6,6 +6,8 @@ import CommandPanel from "./components/CommandPanel";
 import RealtimeGraph from "./components/RealtimeGraph";
 import Terminal from "./components/Terminal";
 import Portal from "./components/Portal";
+import Viewer from "./components/Viewer";
+import StatusBar from "./components/StatusBar";
 
 function App() {
   const [appState, setAppState] = useState(Number);
@@ -18,6 +20,7 @@ function App() {
 
   return (
     <div id="App" className="container bg-gray-900 h-dvh">
+      <StatusBar Components={[]} />
       <div
         id="content"
         className={`h-full flex flex-row ${cmdPanelShow ? "blur-sm" : ""}`}
@@ -25,15 +28,13 @@ function App() {
         <div className="w-1/3">
           <Terminal />
         </div>
-        {appState === 0 ? (
-          <div className="w-2/3">
-            <Portal setState={setAppState} />
-          </div>
-        ) : (
-          <div>
-            <p>TODO</p>
-          </div>
-        )}
+        <div className="w-2/3">
+          {appState === 0 ? (
+            <Portal connectDoneCallback={connectDone} />
+          ) : (
+            <Viewer />
+          )}
+        </div>
       </div>
       <div
         id="command-panel"

@@ -9,3 +9,19 @@ export function EmitProcessInfo(arg1) {
 export function Init() {
   return window['go']['api']['App']['Init']();
 }
+
+export function LogProcessError(arg1) {
+  return window['go']['api']['App']['LogProcessError'](arg1);
+}
+
+export function LogProcessInfo(arg1) {
+  return window['go']['api']['App']['LogProcessInfo'](arg1);
+}
+
+export function LogProcessWarn(arg1) {
+  return window['go']['api']['App']['LogProcessWarn'](arg1);
+}
+
+export function MakeWailsHappy() {
+  return window['go']['api']['App']['MakeWailsHappy']();
+}

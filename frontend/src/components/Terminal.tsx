@@ -24,13 +24,15 @@ function Terminal() {
           }
           return [
             ...list,
-            { timestamp: new Date().toLocaleString(), msg: msg.Msg },
+            { timestamp: new Date().toLocaleTimeString(), msg: msg.Msg },
           ];
         });
         ref.current?.scrollTo(0, 9999);
       }
     );
-    return () => cancel();
+    return () => {
+      cancel();
+    };
   }, []);
 
   return (
@@ -42,8 +44,8 @@ function Terminal() {
       >
         {logList.map((log, index) => (
           <div key={index} className="flex flex-row">
-            <div className="w-1/3">{log.timestamp}</div>
-            <div className="w-2/3">{log.msg}</div>
+            <div className="w-20 pl-1">{log.timestamp}</div>
+            <div className={""}>{log.msg}</div>
           </div>
         ))}
       </div>

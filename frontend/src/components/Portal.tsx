@@ -4,7 +4,7 @@ import { EventsOn } from "../../wailsjs/runtime/runtime";
 import { api } from "../../wailsjs/go/models";
 
 type ProtalProps = {
-  setState: React.Dispatch<React.SetStateAction<number>>;
+  connectDoneCallback: () => void;
 };
 function Portal(props: ProtalProps) {
   const [text, setText] = useState("Connect");
@@ -23,7 +23,7 @@ function Portal(props: ProtalProps) {
   useEffect(() => {
     const cancel = EventsOn(api.MsgKey.init, (initDone: boolean) => {
       if (initDone) {
-        props.setState(1);
+        props.connectDoneCallback();
       } else {
         setText("Retry connect");
         setDoing(false);

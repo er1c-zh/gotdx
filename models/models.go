@@ -5,12 +5,18 @@ type ProcessInfoType uint8
 const (
 	ProcessInfoTypeDebug ProcessInfoType = 0
 	ProcessInfoTypeInfo  ProcessInfoType = 1
-	ProcessInfoTypeErr   ProcessInfoType = 2
+	ProcessInfoTypeWarn  ProcessInfoType = 2
+	ProcessInfoTypeErr   ProcessInfoType = 3
 )
 
 type ProcessInfo struct {
 	Type ProcessInfoType
 	Msg  string
+}
+
+type ServerStatus struct {
+	Connected  bool
+	ServerInfo string
 }
 
 type MarketType uint16

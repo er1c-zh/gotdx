@@ -7,9 +7,9 @@ import (
 type MsgKey string
 
 const (
-	MsgKeyInit             MsgKey = "init"
-	MsgKeyProcessMsg       MsgKey = "processMsg"
-	MsgKeyConnectionStatus MsgKey = "connectionStatus"
+	MsgKeyInit         MsgKey = "init"
+	MsgKeyProcessMsg   MsgKey = "processMsg"
+	MsgKeyServerStatus MsgKey = "serverStatus"
 )
 
 var ExportMsg = []struct {
@@ -18,7 +18,7 @@ var ExportMsg = []struct {
 }{
 	{MsgKeyInit, string(MsgKeyInit)},
 	{MsgKeyProcessMsg, string(MsgKeyProcessMsg)},
-	{MsgKeyConnectionStatus, string(MsgKeyConnectionStatus)},
+	{MsgKeyServerStatus, string(MsgKeyServerStatus)},
 }
 
 var ExportMarketType = []struct {
