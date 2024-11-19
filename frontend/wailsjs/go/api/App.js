@@ -29,3 +29,15 @@ export function LogProcessWarn(arg1) {
 export function MakeWailsHappy() {
   return window['go']['api']['App']['MakeWailsHappy']();
 }
+
+export function StockMeta(arg1) {
+  return window['go']['api']['App']['StockMeta'](arg1);
+}
+
+export function Subscribe(arg1) {
+  return window['go']['api']['App']['Subscribe'](arg1);
+}
+
+export function Unsubscribe(arg1) {
+  return window['go']['api']['App']['Unsubscribe'](arg1);
+}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -16,16 +17,16 @@ import (
 )
 
 func main() {
-	testStockMeta()
+	// testStockMeta()
 	// testServerInfo()
 	// testDownloadFile()
-	// test0547()
+	test0547()
 	// testServerInfo()
 }
 
 func test0547() {
 	var err error
-	cli := ee.NewClient(tdx.DefaultOption.
+	cli := ee.NewClient(context.Background(), tdx.DefaultOption.
 		WithDebugMode().
 		WithTCPAddress("110.41.147.114:7709").
 		WithDebugMode().
@@ -44,11 +45,11 @@ func test0547() {
 
 	resp, err := cli.Realtime([]ee.StockQuery{
 		{Market: tdx.MarketSh, Code: "999999"},
-		{Market: tdx.MarketSz, Code: "399002"},
-		{Market: tdx.MarketSz, Code: "300059"},
-		{Market: tdx.MarketSz, Code: "300010"},
-		{Market: tdx.MarketSh, Code: "999998"},
-		{Market: tdx.MarketSh, Code: "999997"},
+		// {Market: tdx.MarketSz, Code: "399002"},
+		// {Market: tdx.MarketSz, Code: "300059"},
+		// {Market: tdx.MarketSz, Code: "300010"},
+		// {Market: tdx.MarketSh, Code: "999998"},
+		// {Market: tdx.MarketSh, Code: "999997"},
 	})
 	if err != nil {
 		fmt.Printf("error:%s", err)
@@ -61,7 +62,7 @@ func test0547() {
 
 func testStockMeta() {
 	var err error
-	cli := ee.NewClient(tdx.DefaultOption.
+	cli := ee.NewClient(context.Background(), tdx.DefaultOption.
 		WithDebugMode().
 		WithTCPAddress("110.41.147.114:7709").
 		WithDebugMode().
@@ -86,7 +87,7 @@ func testStockMeta() {
 
 func testDownloadFile() {
 	var err error
-	cli := ee.NewClient(tdx.DefaultOption.
+	cli := ee.NewClient(context.Background(), tdx.DefaultOption.
 		WithDebugMode().
 		WithTCPAddress("110.41.147.114:7709").
 		WithDebugMode().
@@ -152,7 +153,7 @@ func testDownloadFile() {
 
 func main3() {
 	var err error
-	cli := ee.NewClient(tdx.DefaultOption.
+	cli := ee.NewClient(context.Background(), tdx.DefaultOption.
 		WithTCPAddress("110.41.147.114:7709").
 		WithDebugMode().
 		WithMsgCallback(func(pi models.ProcessInfo) {
@@ -200,7 +201,7 @@ func main3() {
 
 func testServerInfo() {
 	var err error
-	cli := ee.NewClient(tdx.DefaultOption.
+	cli := ee.NewClient(context.Background(), tdx.DefaultOption.
 		WithDebugMode().
 		WithTCPAddress("110.41.147.114:7709").WithDebugMode().WithMsgCallback(func(pi models.ProcessInfo) {
 		fmt.Printf("%s\n", pi.Msg)

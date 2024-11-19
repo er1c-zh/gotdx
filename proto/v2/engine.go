@@ -9,6 +9,8 @@ import (
 	"gotdx/models"
 	"gotdx/tdx"
 	"time"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type Client struct {
@@ -30,9 +32,10 @@ type respPkg struct {
 	body   []byte
 }
 
-func NewClient(opt tdx.Option) *Client {
+func NewClient(ctx context.Context, opt tdx.Option) *Client {
 	cli := &Client{
 		opt: tdx.ApplyOptions(opt),
+		ctx: ctx,
 	}
 	cli.init()
 	cli.Log("init success.")
@@ -55,6 +58,7 @@ func (c *Client) Log(msg string, args ...any) {
 
 func (c *Client) LogDebug(msg string, args ...any) {
 	c.opt.MsgCallback(models.ProcessInfo{Type: models.ProcessInfoTypeDebug, Msg: fmt.Sprintf(msg, args...)})
+	runtime.LogDebugf(c.ctx, msg, args...)
 }
 
 // use generic type

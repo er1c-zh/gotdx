@@ -22,3 +22,11 @@ func (c *App) CommandMatch(s string) []models.StockMetaItem {
 	}
 	return result
 }
+
+func (a *App) StockMeta(s []string) map[string]models.StockMetaItem {
+	result := make(map[string]models.StockMetaItem)
+	for _, item := range a.stockMeta.StockList {
+		result[item.Code] = item
+	}
+	return result
+}

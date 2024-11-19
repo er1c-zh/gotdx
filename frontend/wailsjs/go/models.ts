@@ -4,9 +4,11 @@ export namespace api {
 	    init = "init",
 	    processMsg = "processMsg",
 	    serverStatus = "serverStatus",
+	    subscribeBroadcast = "subscribeBroadcast",
 	}
 	export class ExportStruct {
 	    F0: models.ServerStatus;
+	    F1: v2.RealtimeRespItem[];
 	
 	    static createFrom(source: any = {}) {
 	        return new ExportStruct(source);
@@ -15,6 +17,7 @@ export namespace api {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.F0 = this.convertValues(source["F0"], models.ServerStatus);
+	        this.F1 = this.convertValues(source["F1"], v2.RealtimeRespItem);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -34,6 +37,22 @@ export namespace api {
 		    }
 		    return a;
 		}
+	}
+	export class SubscribeReq {
+	    Group: string;
+	    Code: string[];
+	    QuoteType: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SubscribeReq(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Group = source["Group"];
+	        this.Code = source["Code"];
+	        this.QuoteType = source["QuoteType"];
+	    }
 	}
 
 }
@@ -89,6 +108,41 @@ export namespace models {
 	        this.Code = source["Code"];
 	        this.Desc = source["Desc"];
 	        this.PinYinInitial = source["PinYinInitial"];
+	    }
+	}
+
+}
+
+export namespace v2 {
+	
+	export class RealtimeRespItem {
+	    Market: number;
+	    Code: string;
+	    CurrentPrice: number;
+	    YesterdayCloseDelta: number;
+	    OpenDelta: number;
+	    HighDelta: number;
+	    LowDelta: number;
+	    TotalVolume: number;
+	    CurrentVolume: number;
+	    TotalAmount: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new RealtimeRespItem(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Market = source["Market"];
+	        this.Code = source["Code"];
+	        this.CurrentPrice = source["CurrentPrice"];
+	        this.YesterdayCloseDelta = source["YesterdayCloseDelta"];
+	        this.OpenDelta = source["OpenDelta"];
+	        this.HighDelta = source["HighDelta"];
+	        this.LowDelta = source["LowDelta"];
+	        this.TotalVolume = source["TotalVolume"];
+	        this.CurrentVolume = source["CurrentVolume"];
+	        this.TotalAmount = source["TotalAmount"];
 	    }
 	}
 

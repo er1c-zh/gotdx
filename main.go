@@ -34,6 +34,9 @@ func main() {
 			api.ExportMsg,
 			api.ExportMarketType,
 		},
+		Debug: options.Debug{
+			OpenInspectorOnStartup: true,
+		},
 	})
 
 	if err != nil {

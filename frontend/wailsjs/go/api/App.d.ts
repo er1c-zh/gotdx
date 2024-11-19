@@ -16,3 +16,9 @@ export function LogProcessInfo(arg1:models.ProcessInfo):Promise<void>;
 export function LogProcessWarn(arg1:models.ProcessInfo):Promise<void>;
 
 export function MakeWailsHappy():Promise<api.ExportStruct>;
+
+export function StockMeta(arg1:Array<string>):Promise<{[key: string]: models.StockMetaItem}>;
+
+export function Subscribe(arg1:api.SubscribeReq):Promise<void>;
+
+export function Unsubscribe(arg1:api.SubscribeReq):Promise<void>;

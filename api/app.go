@@ -23,10 +23,14 @@ type App struct {
 	status *models.ServerStatus
 
 	// data in memory
-	stockMeta *models.StockMetaAll
+	stockMeta    *models.StockMetaAll
+	stockMetaMap map[string]*models.StockMetaItem // WARN: read-only after init
 
 	// tdx v2
 	cli *v2.Client
+
+	// quote subscription
+	qs *QuoteSubscripition
 }
 
 // NewApp creates a new App application struct
@@ -89,7 +93,7 @@ func (a *App) asyncInit() {
 
 		{
 			a.LogProcessInfo(models.ProcessInfo{Msg: "initializing client..."})
-			a.cli = v2.NewClient(tdx.DefaultOption.
+			a.cli = v2.NewClient(a.ctx, tdx.DefaultOption.
 				WithDebugMode().
 				WithTCPAddress("110.41.147.114:7709").
 				WithMsgCallback(a.EmitProcessInfo).
@@ -100,12 +104,12 @@ func (a *App) asyncInit() {
 				return
 			}
 			t0 := time.Now()
-			_, err = a.cli.TDXHandshake()
-			if err != nil {
-				a.LogProcessError(models.ProcessInfo{Msg: fmt.Sprintf("handshake failed: %s", err.Error())})
-				a.cli.Disconnect()
-				return
-			}
+			// _, err = a.cli.TDXHandshake()
+			// if err != nil {
+			// a.LogProcessError(models.ProcessInfo{Msg: fmt.Sprintf("handshake failed: %s", err.Error())})
+			// a.cli.Disconnect()
+			// return
+			// }
 			a.LogProcessInfo(models.ProcessInfo{Msg: fmt.Sprintf("handshake cost: %d ms", time.Since(t0).Milliseconds())})
 			a.updateServerStatus(func(ss *models.ServerStatus) {
 				ss.Connected = true
@@ -142,7 +146,17 @@ func (a *App) asyncInit() {
 					return
 				}
 			}
+			a.stockMetaMap = make(map[string]*models.StockMetaItem, len(a.stockMeta.StockList))
+			for _, v := range a.stockMeta.StockList {
+				a.stockMetaMap[v.Code] = &v
+			}
 			a.LogProcessInfo(models.ProcessInfo{Msg: fmt.Sprintf("load stock meta cost: %d ms", time.Since(t0).Milliseconds())})
+		}
+		{
+			a.LogProcessInfo(models.ProcessInfo{Msg: "initializing quote subscription..."})
+			a.qs = NewQuoteSubscripition(a)
+			a.qs.Start()
+			a.LogProcessInfo(models.ProcessInfo{Msg: "quote subscription initialized"})
 		}
 		a.initDone = true
 	})
@@ -156,6 +170,7 @@ func (a *App) updateServerStatus(f func(*models.ServerStatus)) {
 
 type ExportStruct struct {
 	F0 models.ServerStatus
+	F1 []v2.RealtimeRespItem
 }
 
 func (a *App) MakeWailsHappy() ExportStruct {

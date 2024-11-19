@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { api, models } from "../wailsjs/go/models";
-import { EventsEmit, EventsOn } from "../wailsjs/runtime";
 import CommandPanel from "./components/CommandPanel";
 import Terminal from "./components/Terminal";
 import Portal from "./components/Portal";
 import Viewer from "./components/Viewer";
 import StatusBar from "./components/StatusBar";
+import KeyMessage from "./components/KeyMessage";
 
 function App() {
   const [appState, setAppState] = useState(Number);
@@ -19,7 +18,7 @@ function App() {
 
   return (
     <div id="App" className="container bg-gray-900 h-dvh">
-      <StatusBar Components={[]} />
+      <StatusBar Components={appState === 0 ? [] : [KeyMessage]} />
       <div
         id="content"
         className={`h-full flex flex-row ${cmdPanelShow ? "blur-sm" : ""}`}

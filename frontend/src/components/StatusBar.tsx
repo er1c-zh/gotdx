@@ -27,21 +27,23 @@ function StatusBar(props: StatusBarProps) {
   }, []);
   return (
     <div className="flex flex-row w-full bg-gray-800">
-      <div className="w-24 bg-yellow-900">{time}</div>
-      <div
-        className={`w-auto max-w-48 overflow-x-hidden truncate ... ${
-          serverInfo.Connected ? "bg-green-700" : "bg-red-900"
-        } text-left px-2`}
-      >
-        {serverInfo.ServerInfo
-          ? serverInfo.ServerInfo
-          : serverInfo.Connected
-          ? "Connected"
-          : "Disconnected"}
+      <div className="flex flex-col h-full w-auto max-w-48">
+        <div className="w-full bg-yellow-900">{time}</div>
+        <div
+          className={`w-full overflow-x-hidden truncate ... ${
+            serverInfo.Connected ? "bg-green-700" : "bg-red-900"
+          } text-left px-2`}
+        >
+          {serverInfo.ServerInfo
+            ? serverInfo.ServerInfo
+            : serverInfo.Connected
+            ? "Connected"
+            : "Disconnected"}
+        </div>
       </div>
       <div>
-        {props.Components.map((C: React.ComponentType<any>) => {
-          return <C />;
+        {props.Components.map((C: React.ComponentType<any>, i) => {
+          return <C key={i} />;
         })}
       </div>
     </div>
