@@ -17,7 +17,6 @@ type ServerInfoResp struct {
 func (c *Client) ServerInfo() (*ServerInfo, error) {
 	var err error
 	s := ServerInfo{}
-	s.SetDebug(c.ctx)
 	s.SetContentHex(c.ctx, "01")
 	err = do(c, c.dataConn, &s)
 	if err != nil {

@@ -20,8 +20,37 @@ func main() {
 	// testStockMeta()
 	// testServerInfo()
 	// testDownloadFile()
-	test0547()
+	// test0547()
 	// testServerInfo()
+	test052D()
+}
+
+func test052D() {
+	var err error
+	cli := ee.NewClient(context.Background(), tdx.DefaultOption.
+		WithDebugMode().
+		WithTCPAddress("110.41.147.114:7709").
+		WithDebugMode().
+		WithMsgCallback(func(pi models.ProcessInfo) {
+			fmt.Printf("%s\n", pi.Msg)
+		}).WithMetaAddress("124.71.223.19:7727"))
+	err = cli.Connect()
+	if err != nil {
+		fmt.Printf("error:%s", err)
+		return
+	}
+	fmt.Printf("connected\n")
+
+	// cli.TDXHandshake()
+	// cli.Heartbeat()
+
+	resp, err := cli.CandleStick(tdx.MarketSh, "600000", ee.CandleStickPeriodType_1Min, 0)
+	if err != nil {
+		fmt.Printf("error:%s", err)
+		return
+	}
+	j, _ := json.MarshalIndent(resp, "", "  ")
+	fmt.Printf("%s\n", j)
 }
 
 func test0547() {

@@ -162,6 +162,44 @@ func ReadTDXString(b []byte, cursor *int, fixedLength int) (string, error) {
 	return strings.TrimRight(string(nameUtf8Buf), "\x00"), nil
 }
 
+func ReadTDXTime(b []byte, pos *int, t CandleStickPeriodType) (year int, month int, day int, hour int, minute int, err error) {
+	switch t {
+	case CandleStickPeriodType_5Min,
+		CandleStickPeriodType_15Min,
+		CandleStickPeriodType_30Min,
+		CandleStickPeriodType_1Hour,
+		CandleStickPeriodType_1Min:
+		var zipday, tminutes uint16
+		zipday, err = ReadInt(b, pos, zipday)
+		if err != nil {
+			return
+		}
+		tminutes, err = ReadInt(b, pos, tminutes)
+		if err != nil {
+			return
+		}
+		year = int((zipday >> 11) + 2004)
+		month = int((zipday % 2048) / 100)
+		day = int((zipday % 2048) % 100)
+		hour = int(tminutes / 60)
+		minute = int(tminutes % 60)
+		return
+	case CandleStickPeriodType_Day,
+		CandleStickPeriodType_Week,
+		CandleStickPeriodType_Month:
+		var zipday uint32
+		zipday, err = ReadInt(b, pos, zipday)
+		year = int(zipday / 10000)
+		month = int((zipday % 10000) / 100)
+		day = int(zipday % 100)
+		hour = 15
+	default:
+		err = errors.New("unsupported CandleStickPeriodType")
+		return
+	}
+	return
+}
+
 ///////////////////////////////////////////
 // codec
 ///////////////////////////////////////////

@@ -56,8 +56,6 @@ func (c *Client) Log(msg string, args ...any) {
 
 func (c *Client) LogDebug(msg string, args ...any) {
 	c.opt.MsgCallback(models.ProcessInfo{Type: models.ProcessInfoTypeDebug, Msg: fmt.Sprintf(msg, args...)})
-	fmt.Printf(msg, args...)
-	// runtime.LogDebugf(c.ctx, msg, args...)
 }
 
 // use generic type
