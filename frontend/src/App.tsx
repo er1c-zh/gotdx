@@ -12,26 +12,38 @@ function App() {
   // command panel
   const [cmdPanelShow, setCmdPanelShow] = useState(false);
   const [code, setCode] = useState("");
+  const [showTerminal, setShowTerminal] = useState(false);
   const connectDone = () => {
     setAppState(1);
   };
+  const terminalHandler = (e: KeyboardEvent) => {
+    if (e.key === " ") {
+      setShowTerminal(!showTerminal);
+      e.preventDefault();
+    }
+  };
+  useEffect(() => {
+    document.addEventListener("keydown", terminalHandler);
+    return () => {
+      document.removeEventListener("keydown", terminalHandler);
+    };
+  });
 
   return (
     <div id="App" className="container bg-gray-900 h-dvh">
-      <StatusBar Components={appState === 0 ? [] : [KeyMessage]} />
-      <div
-        id="content"
-        className={`h-full flex flex-row ${cmdPanelShow ? "blur-sm" : ""}`}
-      >
-        <div className="w-1/3">
-          <Terminal />
-        </div>
-        <div className="w-2/3">
-          {appState === 0 ? (
-            <Portal connectDoneCallback={connectDone} />
-          ) : (
-            <Viewer Code={code} />
-          )}
+      <div className="flex flex-col h-full">
+        <StatusBar Components={appState === 0 ? [] : [KeyMessage]} />
+        <div
+          id="content"
+          className={`h-full flex flex-row ${cmdPanelShow ? "blur-sm" : ""}`}
+        >
+          <div className="flex w-full">
+            {appState === 0 ? (
+              <Portal connectDoneCallback={connectDone} />
+            ) : (
+              <Viewer Code={code} />
+            )}
+          </div>
         </div>
       </div>
       <div
@@ -45,6 +57,13 @@ function App() {
           setIsShow={setCmdPanelShow}
           setCode={setCode}
         />
+      </div>
+      <div
+        className={`fixed top-0 left-0 w-screen h-full opacity-75 ${
+          showTerminal ? "" : "hidden"
+        }`}
+      >
+        <Terminal />
       </div>
     </div>
   );
