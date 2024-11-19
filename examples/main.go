@@ -46,7 +46,7 @@ func test0547() {
 	resp, err := cli.Realtime([]ee.StockQuery{
 		{Market: tdx.MarketSh, Code: "999999"},
 		// {Market: tdx.MarketSz, Code: "399002"},
-		// {Market: tdx.MarketSz, Code: "300059"},
+		{Market: tdx.MarketSz, Code: "300059"},
 		// {Market: tdx.MarketSz, Code: "300010"},
 		// {Market: tdx.MarketSh, Code: "999998"},
 		// {Market: tdx.MarketSh, Code: "999997"},
