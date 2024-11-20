@@ -56,7 +56,7 @@ function KeyMessage() {
             </div>
           </div>
           <div className="flex flex-col my-auto">
-            <div>{(d.TotalVolume / 100000000).toFixed(2)} 亿元</div>
+            <div>{(d.TotalAmount / 100000000).toFixed(2)} 亿元</div>
             <div>graph</div>
           </div>
         </div>

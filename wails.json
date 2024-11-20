@@ -1,7 +1,7 @@
 {
   "$schema": "https://wails.io/schemas/config.v2.json",
-  "name": "tdxNg",
-  "outputfilename": "tdxNg",
+  "name": "asNg",
+  "outputfilename": "asNg",
   "frontend:install": "npm install --legacy-peer-deps",
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev --legacy-peer-deps",
