@@ -1,8 +1,6 @@
-import { LogInfo } from "../../wailsjs/runtime/runtime";
 import { models } from "../../wailsjs/go/models";
 import "../App.css";
 import { useEffect, useRef, useState } from "react";
-import App from "../App";
 import { CommandMatch } from "../../wailsjs/go/api/App";
 
 interface CommandPanelProps {
@@ -66,8 +64,8 @@ function CommandPanel(props: CommandPanelProps) {
     };
   });
   return (
-    <div id="command-panel-root" className="container w-full h-screen flex">
-      <div className="flex flex-col mx-auto w-2/3 bg-gray-600 mt-36 h-fit rounded border-gray-600 border-4">
+    <div id="command-panel-root" className="flex">
+      <div className="flex flex-col mx-auto w-1/3 min-w-64 bg-gray-600 mt-36 h-fit rounded border-gray-600 border-4">
         <input
           value={cmd}
           ref={inputRef}
@@ -85,6 +83,7 @@ function CommandPanel(props: CommandPanelProps) {
           {candidators.map((c, i) => {
             return (
               <div
+                key={i}
                 className={`text-2xl rounded ${
                   focusIndex == i ? "bg-yellow-600" : ""
                 }`}

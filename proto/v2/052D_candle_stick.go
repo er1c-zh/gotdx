@@ -9,22 +9,22 @@ import (
 )
 
 func (c *Client) CandleStick(market models.MarketType, code string,
-	periodType CandleStickPeriodType, offset uint16) (*CandleStickResp, error) {
+	periodType CandleStickPeriodType, cursor uint16) (*CandleStickResp, error) {
 	var err error
 	candleStick := &CandleStick{}
-	candleStick.SetDebug(c.ctx)
 	candleStick.Req = &CandleStickReq{
 		MarketType: market,
 		Code:       [6]byte{code[0], code[1], code[2], code[3], code[4], code[5]},
 		Type:       periodType,
 		Unit:       0x0001,
-		Offset:     offset,
+		Offset:     cursor,
 		Size:       0x01A4,
 	}
 	err = do(c, c.dataConn, candleStick)
 	if err != nil {
 		return nil, err
 	}
+	candleStick.Resp.Cursor = cursor + candleStick.Resp.Size
 	return candleStick.Resp, nil
 }
 
@@ -60,6 +60,7 @@ type CandleStickReq struct {
 type CandleStickResp struct {
 	Size     uint16
 	ItemList []CandleStickItem
+	Cursor   uint16
 }
 
 type CandleStickItem struct {
@@ -103,7 +104,7 @@ func (c *CandleStick) UnmarshalResp(ctx context.Context, body []byte) error {
 		if err != nil {
 			return err
 		}
-		item.TimeDesc = fmt.Sprintf("%d-%02d-%02d %02d:%02d", y, m, d, h, M)
+		item.TimeDesc = fmt.Sprintf("%04d-%02d-%02d %02d:%02d", y, m, d, h, M)
 
 		nextPriceDelta := priceDelta
 		item.Open, err = ReadTDXInt(body, &cursor)

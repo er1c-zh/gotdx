@@ -115,6 +115,74 @@ export namespace models {
 
 export namespace v2 {
 	
+	export enum CandleStickPeriodType {
+	    CandleStickPeriodType1Min = 0x7,
+	    CandleStickPeriodType5Min = 0x0,
+	    CandleStickPeriodType15Min = 0x1,
+	    CandleStickPeriodType30Min = 0x2,
+	    CandleStickPeriodType60Min = 0x3,
+	    CandleStickPeriodType1Day = 0x4,
+	    CandleStickPeriodType1Week = 0x5,
+	    CandleStickPeriodType1Month = 0x6,
+	}
+	export class CandleStickItem {
+	    Open: number;
+	    Close: number;
+	    High: number;
+	    Low: number;
+	    Vol: number;
+	    Amount: number;
+	    TimeDesc: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new CandleStickItem(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Open = source["Open"];
+	        this.Close = source["Close"];
+	        this.High = source["High"];
+	        this.Low = source["Low"];
+	        this.Vol = source["Vol"];
+	        this.Amount = source["Amount"];
+	        this.TimeDesc = source["TimeDesc"];
+	    }
+	}
+	export class CandleStickResp {
+	    Size: number;
+	    ItemList: CandleStickItem[];
+	    Cursor: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new CandleStickResp(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Size = source["Size"];
+	        this.ItemList = this.convertValues(source["ItemList"], CandleStickItem);
+	        this.Cursor = source["Cursor"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class RealtimeRespItem {
 	    Market: number;
 	    Code: string;

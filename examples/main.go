@@ -44,7 +44,7 @@ func test052D() {
 	// cli.TDXHandshake()
 	// cli.Heartbeat()
 
-	resp, err := cli.CandleStick(tdx.MarketSh, "600000", ee.CandleStickPeriodType_1Min, 0)
+	resp, err := cli.CandleStick(tdx.MarketSh, "600000", ee.CandleStickPeriodType_Day, 0)
 	if err != nil {
 		fmt.Printf("error:%s", err)
 		return

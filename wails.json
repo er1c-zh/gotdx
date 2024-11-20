@@ -2,9 +2,9 @@
   "$schema": "https://wails.io/schemas/config.v2.json",
   "name": "tdxNg",
   "outputfilename": "tdxNg",
-  "frontend:install": "npm install",
+  "frontend:install": "npm install --legacy-peer-deps",
   "frontend:build": "npm run build",
-  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:watcher": "npm run dev --legacy-peer-deps",
   "frontend:dev:serverUrl": "auto",
   "author": {
     "name": "eric",

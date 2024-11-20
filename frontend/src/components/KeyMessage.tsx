@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { StockMeta, Subscribe, Unsubscribe } from "../../wailsjs/go/api/App";
 import { api, models, v2 } from "../../wailsjs/go/models";
 import { EventsOn } from "../../wailsjs/runtime/runtime";
-import RealtimeGraph from "./RealtimeGraph";
 
 function KeyMessage() {
   const [data, setData] = useState<v2.RealtimeRespItem[]>([]);

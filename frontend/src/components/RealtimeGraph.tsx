@@ -1,6 +1,5 @@
 import * as d3 from "d3";
 import { useEffect, useState } from "react";
-import { LogInfo } from "../../wailsjs/runtime/runtime";
 
 type RealtimeGraphProps = {
   code: string;

@@ -18,9 +18,10 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "asNg",
-		Width:  1024,
-		Height: 768,
+		Title:            "asNg",
+		Width:            1024,
+		Height:           768,
+		WindowStartState: options.Fullscreen,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
@@ -33,6 +34,7 @@ func main() {
 		EnumBind: []interface{}{
 			api.ExportMsg,
 			api.ExportMarketType,
+			api.ExportCandleStickPeriodType,
 		},
 		Debug: options.Debug{
 			OpenInspectorOnStartup: true,

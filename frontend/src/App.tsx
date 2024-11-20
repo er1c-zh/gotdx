@@ -30,27 +30,27 @@ function App() {
   });
 
   return (
-    <div id="App" className="container bg-gray-900 h-dvh">
-      <div className="flex flex-col h-full">
+    <div id="App" className="bg-gray-900 h-dvh w-full">
+      <div
+        id="content"
+        className={`h-full w-full flex flex-col ${
+          cmdPanelShow ? "blur-sm" : ""
+        }`}
+      >
         <StatusBar Components={appState === 0 ? [] : [KeyMessage]} />
-        <div
-          id="content"
-          className={`h-full flex flex-row ${cmdPanelShow ? "blur-sm" : ""}`}
-        >
-          <div className="flex w-full">
-            {appState === 0 ? (
-              <Portal connectDoneCallback={connectDone} />
-            ) : (
-              <Viewer Code={code} />
-            )}
-          </div>
+        <div className="flex h-full w-full">
+          {appState === 0 ? (
+            <Portal connectDoneCallback={connectDone} />
+          ) : (
+            <Viewer Code={code} />
+          )}
         </div>
       </div>
       <div
         id="command-panel"
         className={`${
           cmdPanelShow ? "" : "hidden"
-        } w-screen fixed top-0 left-0`}
+        } w-full h-full fixed top-0 left-0 border-2 border-gray-500`}
       >
         <CommandPanel
           IsShow={cmdPanelShow}
@@ -59,7 +59,7 @@ function App() {
         />
       </div>
       <div
-        className={`fixed top-0 left-0 w-screen h-full opacity-75 ${
+        className={`fixed top-0 left-0 w-full h-full border-2 border-gray-500 opacity-75 ${
           showTerminal ? "" : "hidden"
         }`}
       >
